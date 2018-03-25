@@ -54,18 +54,25 @@ makeMove board col pos | fst pos < 0 = Nothing
 checkWon :: Board -> [(Position, Col)]-> Maybe Col
 checkWon board [] = Nothing
 checkWon board (x:xs) = if checkDirections board x
-                                            then Just (snd x)
-                                            else checkWon board xs
+                            then Just (snd x)
+                            else checkWon board xs
 
+-- Check every direction for a winning row
+-- build a [Bool] with the value for every direction
+-- if list contains a True value return True else return False
 checkDirections :: Board -> (Position, Col) -> Bool
-checkDirections board piece = or [checkDirection board (target board) (x, y) piece | x <- [-1, 0, 1], y <- [-1, 0, 1]]
+checkDirections board piece = or [checkDirection board (target board) (x, y) piece | x <- [-1, 0, 1],
+                                                                                     y <- [-1, 0, 1],
+                                                                                     (x, y) /= (0, 0)]
 
-
+-- This function implements the hint provided below
+-- Params are the board, n in a row, the direction of travel, a piece
+-- returns true if a winning row exists
+-- return false if no row exists in the given direction
 checkDirection :: Board -> Int -> (Int, Int) -> (Position, Col) -> Bool
-checkDirection board n (dirX, dirY) ((x,y), col) =
-                  if n == 1
-                        then True
-                        else if elem ((x - dirX, y - dirY), col) (pieces board)
+checkDirection board 1 (dirX, dirY) ((x,y), col) = True
+checkDirection board n (dirX, dirY) ((x,y), col)
+                            = if elem ((x - dirX, y - dirY), col) (pieces board)
                                   then checkDirection board (n - 1) (dirX, dirY) ((x - dirX, y - dirY), col)
                                   else False
 
