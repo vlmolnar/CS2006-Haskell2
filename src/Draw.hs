@@ -10,6 +10,12 @@ squareWidth = 70
 pieceWidth :: Float
 pieceWidth = 20
 
+xBase :: Float
+xBase = (-240)
+
+yBase :: Float
+yBase = 200
+
 --Returns single black piece
 blackPiece :: Float -> Float -> Picture
 blackPiece x y = translate x y (Color black (circleSolid pieceWidth))
@@ -46,36 +52,20 @@ gridVerLine x y size = Color white (Line[(x, y), (x, y - (fromIntegral size) * w
 
 --Takes the board size as argument to create a grid of the given size
 makeGrid :: Int -> Picture
-makeGrid size = pictures ([(gridVerLine (-240 + (fromIntegral i) * squareWidth) 200 (size - 1)) | i <- [0..size-1]]
-                          ++ [(gridHorLine (-240) (200 - (fromIntegral i) * squareWidth) (size - 1)) | i <- [0..size-1]])
+makeGrid size = pictures ([(gridVerLine (xBase + (fromIntegral i) * squareWidth) yBase (size - 1)) | i <- [0..size-1]]
+                          ++ [(gridHorLine xBase (yBase - (fromIntegral i) * squareWidth) (size - 1)) | i <- [0..size-1]])
 
--- makePieces :: Board -> Picture
-
--- alternate to makeGrid, uses gridSquares, unfinished
--- makeBoard :: Board -> Picture
--- makeBoard board = do let squares = []
---                      let x =
---                      do squares ++
---                            where
---                              size = size board  -- Board size should be 6
-
-
-
--- List that keeps track of all current pictures on display
-drawing :: Picture
-drawing = pictures
-  [--  blackPiece 240 175
-  -- , whitePiece 0 0
-  -- , gridSquare 240 175
-  -- , gridSquare 50 (-140)
-  -- , gridHorLine (-240) 200 6
-  -- , gridVerLine (-240) 200 6
-  makeGrid 6
-  ]
-  -- [ Color yellow (rectangleSolid 60 60) -- Single grid on board
-  -- , Color black (circleSolid 20)      -- Black piece
-  -- , Color white (circleSolid 20)      -- White piece
-  -- ]
+makePieces :: [(Position, Col)] -> Picture
+makePieces[] = pictures []
+makePieces xs = pictures [if c == Black
+                            then blackPiece (xBase + (fromIntegral a) * squareWidth) (yBase - (fromIntegral b) * squareWidth)
+                          else whitePiece (xBase + (fromIntegral a) * squareWidth) (yBase - (fromIntegral b) * squareWidth)
+                          -- | a <- fst (fst x) | b <- snd (fst x) | c <- snd x | x <- xs]
+                          | x <- xs, let a = fst (fst x), let b = snd (fst x), let c = snd x]
+                          -- where
+                          --   a = fst (fst x)
+                          --   b = snd (fst x)
+                          --   c = snd x
 
 -- Given a world state, return a Picture which will render the world state.
 -- Currently just draws a single blue circle as a placeholder.
@@ -84,15 +74,8 @@ drawing = pictures
 -- as a grid plus pieces.
 drawWorld :: World -> Picture
 drawWorld w = pictures
-  [
-  makeGrid (size (board w))
+  [ makeGrid (size (board w))
+  , makePieces (pieces (board w))
   ]
--- drawWorld w = Color blue $ Circle 100   -- $ same as parantheses on anything that comes after it
-
--- Function to test if Gloss is working properly
-testFunc :: IO()
-testFunc = display (InWindow "Testing" (500,500) (100,100))
-                blue
-                (Pictures [Color red (Circle 100)])
 
 -- Reference: http://andrew.gibiansky.com/blog/haskell/haskell-gloss/
