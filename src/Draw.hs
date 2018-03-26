@@ -4,11 +4,10 @@ import Graphics.Gloss
 import Board
 
 -- Window resolution: (640, 480)
-drawing pictures =
-  [ Color black (circleSolid 10)                  -- Black piece
-  , Color white (circleSolid 10)                  -- White piece
-  , Color white (Line [(-250, -10), (50, -10)])   -- Horizontal line
-  , Color white (Line [(-250, -10), (-250, -210)])-- Vertical line
+drawing = pictures
+  [ rectangleSolid 15 15              -- Single grid on board
+  , Color black (circleSolid 10)      -- Black piece
+  , Color white (circleSolid 10)      -- White piece
   ]
   -- "translate" function repositions coordinats, takes an x and y argument
 

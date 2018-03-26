@@ -20,11 +20,6 @@ import AI
 -- and, if it is an AI's turn, should update the board with an AI generated
 -- move
 
-testFunc :: IO()
-testFunc = display (InWindow "Testing" (500,500) (100,100))
-                blue
-                (Pictures [Color red (Circle 100)])
-
 main :: IO ()
 main = play (InWindow "Gomoku" (640, 480) (10, 10)) black 10
             initWorld -- in Board.hs, provides world
