@@ -35,7 +35,7 @@ initBoard = Board 6 3 []
 -- most recent moves were).
 data World = World { board :: Board,
                      turn :: Col }
-
+    deriving Show
 initWorld = World initBoard Black
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
@@ -61,9 +61,10 @@ checkWon board (x:xs) = if checkDirections board x
 -- build a [Bool] with the value for every direction
 -- if list contains a True value return True else return False
 checkDirections :: Board -> (Position, Col) -> Bool
-checkDirections board piece = or [checkDirection board (target board) (x, y) piece | x <- [-1, 0, 1],
-                                                                                     y <- [-1, 0, 1],
-                                                                                     (x, y) /= (0, 0)]
+checkDirections board piece =
+    or [checkDirection board (target board) (x, y) piece | x <- [-1, 0, 1],
+                                                           y <- [-1, 0, 1],
+                                                           (x, y) /= (0, 0)]
 
 -- This function implements the hint provided below
 -- Params are the board, n in a row, the direction of travel, a piece
@@ -92,3 +93,7 @@ For every position ((x, y), col) in the 'pieces' list:
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
 evaluate = undefined
+
+-- line inclosed both sides          = 0
+-- line open with chance of winning  = 10 ^ n
+-- line open both sides              = 10 ^ n *  2
