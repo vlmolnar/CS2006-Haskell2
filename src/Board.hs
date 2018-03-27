@@ -34,7 +34,8 @@ initBoard = Board 6 3 []
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
 data World = World { board :: Board,
-                     turn :: Col }
+                     turn :: Col
+                   }
     deriving Show
 initWorld = World initBoard Black
 
@@ -92,7 +93,7 @@ For every position ((x, y), col) in the 'pieces' list:
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
-evaluate = undefined
+evaluate board col = 10
 
 -- line inclosed both sides          = 0
 -- line open with chance of winning  = 10 ^ n
