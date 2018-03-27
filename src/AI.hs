@@ -1,7 +1,6 @@
 module AI where
 
 import Board
-import Data.Maybe
 
 data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
@@ -22,15 +21,15 @@ buildTree :: (Board -> Col -> [Position]) -- ^ Move generator
              -> Board -- ^ board state
              -> Col -- ^ player to play next
              -> GameTree
-buildTree gen board col = let moves = gen board col in -- generated moves
-                        GameTree board col (mkNextStates moves)
+buildTree gen b c = let moves = gen b c in -- generated moves
+                        GameTree b c (mkNextStates moves)
   where
     mkNextStates :: [Position] -> [(Position, GameTree)]
     mkNextStates [] = []
     mkNextStates (pos : xs)
-        = case makeMove board col pos of -- try making the suggested move
+        = case makeMove b c pos of -- try making the suggested move
                Nothing -> mkNextStates xs -- not successful, no new state
-               Just b' -> (pos, buildTree gen b' (other col)) : mkNextStates xs
+               Just b' -> (pos, buildTree gen b' (other c)) : mkNextStates xs
                              -- successful, make move and build tree from
                              -- here for opposite player
 
@@ -40,20 +39,14 @@ buildTree gen board col = let moves = gen board col in -- generated moves
 -- is at the top of the game tree.
 getBestMove :: Int -- ^ Maximum search depth
                -> GameTree -- ^ Initial game tree
-               -> (Int, Position)
-getBestMove 1 gameTree = (10 {-evaluate-}, fst ((next_moves gameTree) !! 0))
-getBestMove n gameTree = maximum [getBestMove (n - 1) (snd g) | g <- (next_moves gameTree)]
-
+               -> Position
+getBestMove = undefined
 
 -- Update the world state after some time has passed
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
-updateWorld t w | (turn w) == Black = w -- if human
-                | otherwise = World (fromJust (makeMove (board w) col pos)) col
-                                where col = (turn w)
-                                      pos = snd (getBestMove 1 (buildTree gen (board w) col))
-                                      gen = moveGenerator
+updateWorld t w = w
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
@@ -68,9 +61,3 @@ updateWorld t w | (turn w) == Black = w -- if human
  In a complete implementation, 'updateWorld' should also check if either
  player has won and display a message if so.
 -}
-
--- currently generating all possible moves
-moveGenerator :: Board -> Col -> [Position]
-moveGenerator board col = [(x, y) | x <- [0.. (size board) - 1],
-                                    y <- [0.. (size board) - 1],
-                                    not ((elem ((x, y), col) (pieces board)) || (elem ((x, y), (other col)) (pieces board)))]

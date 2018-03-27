@@ -4,6 +4,7 @@ import Graphics.Gloss
 import Board
 
 -- Window resolution: (640, 480)
+-- Constants
 squareWidth :: Float
 squareWidth = 70
 
@@ -60,12 +61,8 @@ makePieces[] = pictures []
 makePieces xs = pictures [if c == Black
                             then blackPiece (xBase + (fromIntegral a) * squareWidth) (yBase - (fromIntegral b) * squareWidth)
                           else whitePiece (xBase + (fromIntegral a) * squareWidth) (yBase - (fromIntegral b) * squareWidth)
-                          -- | a <- fst (fst x) | b <- snd (fst x) | c <- snd x | x <- xs]
                           | x <- xs, let a = fst (fst x), let b = snd (fst x), let c = snd x]
-                          -- where
-                          --   a = fst (fst x)
-                          --   b = snd (fst x)
-                          --   c = snd x
+
 
 -- Given a world state, return a Picture which will render the world state.
 -- Currently just draws a single blue circle as a placeholder.
