@@ -1,6 +1,6 @@
 module Board where
 
-data Col = Black | White
+data Col = Black | White | Empty
   deriving (Show, Eq)
 
 other :: Col -> Col
@@ -8,6 +8,19 @@ other Black = White
 other White = Black
 
 type Position = (Int, Int)
+
+type Direction = (Int, Int)
+
+oppDir :: Direction -> Direction
+oppDir (x, y) = (-x, -y)
+
+boundsCheck :: Int -> (Position, Col) -> (Direction) -> Bool
+boundsCheck n ((x, y), col) (dirX, dirY)
+    |x + dirX < 0 = False          --bounds checks
+    | y + dirY < 0 = False         --bounds checks
+    | x + dirX >= n = False --bounds checks
+    | y + dirY >= n = False --bounds checks
+    | otherwise = True
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
@@ -17,7 +30,7 @@ type Position = (Int, Int)
 --
 -- Board 10 5 [((5, 5), Black), ((8,7), White)]
 
-data Board = Board { size :: Int,
+data Board = Board { b_size :: Int,
                      target :: Int,
                      pieces :: [(Position, Col)]
                    }
@@ -44,10 +57,23 @@ initWorld = World initBoard Black
 makeMove :: Board -> Col -> Position -> Maybe Board
 makeMove board col pos | fst pos < 0 = Nothing
                        | snd pos < 0 = Nothing
-                       | fst pos > (size board) - 1 = Nothing
-                       | snd pos > (size board) - 1 = Nothing
+                       | fst pos > (b_size board) - 1 = Nothing
+                       | snd pos > (b_size board) - 1 = Nothing
                        | elem (pos, col) (pieces board) = Nothing
-                       | otherwise = Just (Board (size board) (target board) ((pos, col) : (pieces board)))
+                       | otherwise = Just (Board (b_size board) (target board) ((pos, col) : (pieces board)))
+
+{- Hint: One way to implement 'checkWon' would be to write functions
+which specifically check for lines in all 8 possible directions
+(NW, N, NE, E, W, SE, SW)
+
+In these functions:
+To check for a line of n in a row in a direction D:
+For every position ((x, y), col) in the 'pieces' list:
+- if n == 1, the colour 'col' has won
+- if n > 1, move one step in direction D, and check for a line of
+ n-1 in a row.
+ -}
+
 
 -- Check whether the board is in a winning state for either player.
 -- Returns 'Nothing' if neither player has won yet
@@ -71,29 +97,59 @@ checkDirections board piece =
 -- Params are the board, n in a row, the direction of travel, a piece
 -- returns true if a winning row exists
 -- return false if no row exists in the given direction
-checkDirection :: Board -> Int -> (Int, Int) -> (Position, Col) -> Bool
+checkDirection :: Board -> Int -> Direction -> (Position, Col) -> Bool
 checkDirection board 1 (dirX, dirY) ((x,y), col) = True
 checkDirection board n (dirX, dirY) ((x,y), col)
                             = if elem ((x - dirX, y - dirY), col) (pieces board)
                                   then checkDirection board (n - 1) (dirX, dirY) ((x - dirX, y - dirY), col)
                                   else False
 
-{- Hint: One way to implement 'checkWon' would be to write functions
-which specifically check for lines in all 8 possible directions
-(NW, N, NE, E, W, SE, SW)
-
-In these functions:
-To check for a line of n in a row in a direction D:
-For every position ((x, y), col) in the 'pieces' list:
-- if n == 1, the colour 'col' has won
-- if n > 1, move one step in direction D, and check for a line of
-  n-1 in a row.
--}
 
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
+-- calls eval if no winner
+-- sets winners to +ve a million or -ve a million
 evaluate :: Board -> Col -> Int
-evaluate board col = 10
+evaluate b c = case checkWon b (pieces b) of Nothing -> eval b c
+                                             Just x -> 10 ^ 6
+
+-- Evaluates a board with no winners checking all nodes for lines of
+-- consecutive colours
+eval :: Board -> Col -> Int
+eval b c = sum [evalPiece b (pos, col) | (pos, col) <- filter ((== c).snd) (pieces b)]
+
+-- evaluate all lines that start at a piece
+evalPiece :: Board -> (Position, Col) -> Int
+evalPiece b (pos, col) = sum [evalDirection b 1 dir (pos, col) | dir <- (getDirectionsToEval b col (pos, col))]
+
+
+getDirectionsToEval :: Board -> Col -> (Position, Col) -> [Direction]
+getDirectionsToEval b c piece = [ oppDir (x, y) | x <- [-1, 0, 1],
+                                                  y <- [-1, 0, 1],
+                                                  (checkNextPiece b (x, y) piece) /= c]
+
+checkNextPiece :: Board -> Direction -> (Position, Col) -> Col
+checkNextPiece b (dirX, dirY) ((x, y), col)
+                | elem ((x + dirX, y + dirY), col) (pieces b) = col
+                | elem ((x + dirX, y + dirY), (other col)) (pieces b) = (other col)
+                | otherwise = Empty
+
+-- evaluate direction
+-- if same colour +1
+-- if other other colour
+-- if blank return value
+evalDirection :: Board -> Int -> Direction -> (Position, Col) -> Int
+evalDirection b n (dirX, dirY) ((x,y), col)
+                  |  elem ((x + dirX, y + dirY), col) (pieces b) -- if same colour
+                        = evalDirection b (n + 1) (dirX, dirY) ((x + dirX, y + dirY), col)
+                  |  elem ((x + dirX, y + dirY), (other col)) (pieces b) = 0 -- if closed line
+                  | x + dirX < 0 = 0         --bounds checks
+                  | y + dirY < 0 = 0         --bounds checks
+                  | x + dirX >= (b_size b) = 0 --bounds checks
+                  | y + dirY >= (b_size b) = 0 --bounds checks
+                  | otherwise = 10 ^ n --if at the end of the line
+
+
 
 -- line inclosed both sides          = 0
 -- line open with chance of winning  = 10 ^ n

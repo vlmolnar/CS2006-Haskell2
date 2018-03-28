@@ -2,6 +2,7 @@ module AI where
 
 import Board
 import Data.Maybe
+import Data.Set
 
 data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
@@ -41,25 +42,29 @@ buildTree gen board col = let moves = gen board col in -- generated moves
 getBestMove :: Int -- ^ Maximum search depth
                -> GameTree -- ^ Initial game tree
                -> Position
-getBestMove n g = fst (maximum [ (pos, (minimax g' n True)) | (pos, g') <- (next_moves g)])
+getBestMove n g = snd (maximum list)
+                        where list = [((minimax g' (n - 1) False), pos) | (pos, g') <- (next_moves g)]
 
+
+-- Gets the heuristic value of each state in the game tree and returns the best value to getBestMove
+-- This value is supplied by evaluate in the Board module
 minimax :: GameTree -> Int -> Bool -> Int
-minimax g 0 isMax = evaluate (game_board g) (game_turn g) -- depth 0
-minimax (GameTree b col []) n isMax = evaluate b col -- leaf node
-minimax g n True = maximum [(minimax (snd nextMove) (n -1) False) | nextMove <- (next_moves g)]
-minimax g n False = minimum [(minimax (snd nextMove) (n -1) True) | nextMove <- (next_moves g)]
+minimax g 0 True = evaluate (game_board g) (game_turn g) -- depth 0
+minimax g 0 False = -1 * (evaluate (game_board g) (game_turn g)) -- depth 0
+minimax g n True = maximum [(minimax (snd nextMove) (n - 1) False) | nextMove <- (next_moves g)]
+minimax g n False = minimum [(minimax (snd nextMove) (n - 1) True) | nextMove <- (next_moves g)]
 
 
 -- Update the world state after some time has passed
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
-updateWorld t w | (turn w) == Black = w -- if human
+updateWorld t w | (turn w) == Black = World (board w) (other col)-- if human
                 | otherwise
-                      = World (fromJust (makeMove (board w) col pos)) col
+                      = World (fromJust (makeMove (board w) col pos)) (other col)
                                 where col = (turn w)
-                                      pos = getBestMove 1 (buildTree gen (board w) col )
-                                      gen = moveGenerator
+                                      pos = getBestMove 2 (buildTree gen (board w) col )
+                                      gen = moveGeneratorAdj
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
@@ -76,7 +81,27 @@ updateWorld t w | (turn w) == Black = w -- if human
 -}
 
 -- currently generating all possible moves
-moveGenerator :: Board -> Col -> [Position]
-moveGenerator board col = [(x, y) | x <- [0.. (size board) - 1],
-                                    y <- [0.. (size board) - 1],
+moveGenerator :: Board -> Col -> [(Int, Int)]
+moveGenerator board col = [(x, y) | x <- [0.. (b_size board) - 1],
+                                    y <- [0.. (b_size board) - 1],
                                     not ((elem ((x, y), col) (pieces board)) || (elem ((x, y), (other col)) (pieces board)))]
+-- remove duplicates from list
+-- convert to Data.set then back to list
+-- ref: https://stackoverflow.com/questions/16108714/removing-duplicates-from-a-list-in-haskell
+rmDup :: Ord a => [a] -> [a]
+rmDup = toList . fromList
+
+-- generate all the empty positions adjacent to a piece from a list of pieces
+moveGeneratorAdj :: Board -> Col -> [(Int, Int)]
+moveGeneratorAdj b c = moveGeneratorAdjDiffParam b (pieces b)
+
+moveGeneratorAdjDiffParam :: Board -> [(Position, Col)] -> [Position]
+moveGeneratorAdjDiffParam b [] = []
+moveGeneratorAdjDiffParam board (p:ps) = rmDup ((getAdj board p) ++ moveGeneratorAdjDiffParam board ps)
+      where
+        getAdj :: Board -> (Position, Col) -> [Position]
+        getAdj board ((a, b), col)
+            = [(a + x, b + y) | x <- [-1, 0, 1],
+                                y <- [-1, 0, 1],
+                                (checkNextPiece board (x, y) ((a, b), col)) == Empty
+                                && (boundsCheck (b_size board) ((a, b), col) (x, y))]
