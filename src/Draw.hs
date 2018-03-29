@@ -71,7 +71,7 @@ makePieces xs = pictures [if c == Black
 -- as a grid plus pieces.
 drawWorld :: World -> Picture
 drawWorld w = pictures
-  [ makeGrid (size (board w))
+  [ makeGrid (b_size (board w))
   , makePieces (pieces (board w))
   ]
 
