@@ -36,13 +36,14 @@ handleInput e b = b
 
 --Calculates board coordinates from window coordinates
 getBoardCoord :: (Float, Float) -> (Int, Int)
-getBoardCoord (x,y) = (round ((x - xBase) / squareWidth), abs (round ((y - yBase) / squareWidth)))
+getBoardCoord (x,y) = (round ((x - xBase) / squareWidth), (round ((yBase - y) / squareWidth)))
 
 --Updates world based on user input
 makeWorld :: World -> (Int, Int) -> World
 makeWorld w pos = do let val = makeMove (board w) (turn w) pos
                      case val of Nothing  -> w
-                                 (Just b) -> World b (other (turn w))
+                                 (Just b) -> updateWorld b (turn w)
+                                 -- (Just b) -> World b (other (turn w))
 
 
 {- Hint: when the 'World' is in a state where it is the human player's
