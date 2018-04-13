@@ -89,6 +89,8 @@ updateWorld t (Play board turn)
                  = do let winner = checkWon board (pieces board)
                       case winner of Nothing -> makeAIMove (Play board turn)
                                      (Just c) -> Victory (Just c)
+updateWorld t (Victory winner) = Victory winner
+updateWorld t (Menu colour) = Menu colour
 
 makeAIMove :: World -> World
 makeAIMove (Play board turn)
@@ -97,6 +99,7 @@ makeAIMove (Play board turn)
                     = Play (fromJust (makeMove board turn pos)) (other turn)
                               where pos = getBestMove 3 (buildTree gen board turn )
                                     gen = moveGeneratorAdj
+
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
  'getBestMove' to find where the computer player should play, and update

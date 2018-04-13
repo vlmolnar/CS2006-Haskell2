@@ -24,18 +24,29 @@ yBase = 200
 -- 'trace' returns its second argument while printing its first argument
 -- to stderr, which can be a very useful way of debugging!
 handleInput :: Event -> World -> World
---b = world
-handleInput (EventMotion (x, y)) (Play board turn winner)
-    = trace ("Mouse moved to: " ++ show (x,y)) (Play board turn winner)
-handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Play board turn winner)
-    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (makeWorld (Play board turn winner) (getBoardCoord (x,y)))
-handleInput (EventKey (Char k) Down _ _) (Play board turn winner)
-    = trace ("Key " ++ show k ++ " down") (Play board turn winner)
-handleInput (EventKey (Char k) Up _ _) (Play board turn winner)
-    = trace ("Key " ++ show k ++ " up") (Play board turn winner)
+--Debugging
+handleInput (EventMotion (x, y)) w
+    = trace ("Mouse moved to: " ++ show (x,y)) w
+
+--Handles UI during the game
+handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Play board turn)
+    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (makeWorld (Play board turn) (getBoardCoord (x,y)))
+handleInput (EventKey (Char k) Down _ _) (Play board turn)
+    = trace ("Key " ++ show k ++ " down") (Play board turn)
+handleInput (EventKey (Char k) Up _ _) (Play board turn)
+    = trace ("Key " ++ show k ++ " up") (Play board turn)
+
+
+--Handles UI on Victory screen, proceeds to menu if the user clicks
+handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Victory winner)
+    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) Menu Black
+
+--Handles UI on Menu screen
+handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Menu colour)
+    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) initWorld
+
 handleInput e b = b
 
---If Replay button is clicked
 
 --Calculates board coordinates from window coordinates
 getBoardCoord :: (Float, Float) -> (Int, Int)
@@ -43,9 +54,9 @@ getBoardCoord (x,y) = (round ((x - xBase) / squareWidth), (round ((yBase - y) / 
 
 --Updates world based on user input
 makeWorld :: World -> (Int, Int) -> World
-makeWorld (Play board turn winner) pos = do let val = makeMove board turn pos
-                                            case val of Nothing  -> (Play board turn winner)
-                                                        (Just b) -> Play b (other turn) Nothing
+makeWorld (Play board turn) pos = do let val = makeMove board turn pos
+                                     case val of Nothing  -> (Play board turn)
+                                                 (Just b) -> Play b (other turn)
 
 
 {- Hint: when the 'World' is in a state where it is the human player's
