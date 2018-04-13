@@ -112,5 +112,6 @@ makeAIMove (Play board turn)
 -}
 
 undoMove :: World -> World
-undoMove (Play board turn)
+undoMove (Play b turn)
             = Play board (other turn)
+                where board = Board (b_size b) (target b) (drop 1 (pieces b))
