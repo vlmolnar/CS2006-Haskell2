@@ -47,13 +47,12 @@ initBoard = Board 6 3 []
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
 data World = Play { board :: Board,
-                     turn   :: Col,
-                     winner :: Maybe Col
-                   }
-              |Menu { playerCol :: Col }
-              |Victory { winner :: Maybe Col }
+                     turn   :: Col
+                  }
+              | Menu { playerCol :: Col }
+              | Victory { winner :: Maybe Col }
     deriving Show
-initWorld = Play initBoard Black Nothing
+initWorld = Play initBoard Black
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
@@ -64,6 +63,7 @@ makeMove board col pos | fst pos < 0 = Nothing
                        | snd pos > (b_size board) - 1 = Nothing
                        | elem (pos, col) (pieces board) = Nothing
                        | otherwise = Just (Board (b_size board) (target board) ((pos, col) : (pieces board)))
+
 
 {- Hint: One way to implement 'checkWon' would be to write functions
 which specifically check for lines in all 8 possible directions

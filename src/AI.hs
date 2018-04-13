@@ -54,38 +54,6 @@ minimax g 0 False = -1 * (evaluate (game_board g) (game_turn g)) -- depth 0
 minimax g n True = maximum [(minimax (snd nextMove) (n - 1) False) | nextMove <- (next_moves g)]
 minimax g n False = minimum [(minimax (snd nextMove) (n - 1) True) | nextMove <- (next_moves g)]
 
-
--- Update the world state after some time has passed
-updateWorld :: Float -- ^ time since last update (you can ignore this)
-            -> World -- ^ current world state
-            -> World
---updateWorld t w = w
-updateWorld t (Play board turn winner)
-                 = do let winner = checkWon board (pieces board)
-                      case winner of Nothing -> makeAIMove (Play board turn winner)
-                                     (Just c) -> Play board turn (Just c)
-
-makeAIMove :: World -> World
-makeAIMove (Play board turn winner)
-              | turn == Black = Play board turn winner
-              | otherwise
-                    = Play (fromJust (makeMove board turn pos)) (other turn) Nothing
-                              where pos = getBestMove 3 (buildTree gen board turn )
-                                    gen = moveGeneratorAdj
-{- Hint: 'updateWorld' is where the AI gets called. If the world state
- indicates that it is a computer player's turn, updateWorld should use
- 'getBestMove' to find where the computer player should play, and update
- the board in the world state with that move.
-
- At first, it is reasonable for this to be a random move!
-
- If both players are human players, the simple version above will suffice,
- since it does nothing.
-
- In a complete implementation, 'updateWorld' should also check if either
- player has won and display a message if so.
--}
-
 -- currently generating all possible moves
 moveGenerator :: Board -> Col -> [(Int, Int)]
 moveGenerator board col = [(x, y) | x <- [0.. (b_size board) - 1],
@@ -111,3 +79,38 @@ moveGeneratorAdjDiffParam board (p:ps) = rmDup ((getAdj board p) ++ moveGenerato
                                 y <- [-1, 0, 1],
                                 (checkNextPiece board (x, y) ((a, b), col)) == Empty
                                 && (boundsCheck (b_size board) ((a, b), col) (x, y))]
+
+-- Update the world state after some time has passed
+updateWorld :: Float -- ^ time since last update (you can ignore this)
+            -> World -- ^ current world state
+            -> World
+--updateWorld t w = w
+updateWorld t (Play board turn)
+                 = do let winner = checkWon board (pieces board)
+                      case winner of Nothing -> makeAIMove (Play board turn)
+                                     (Just c) -> Victory (Just c)
+
+makeAIMove :: World -> World
+makeAIMove (Play board turn)
+              | turn == Black = Play board turn
+              | otherwise
+                    = Play (fromJust (makeMove board turn pos)) (other turn)
+                              where pos = getBestMove 3 (buildTree gen board turn )
+                                    gen = moveGeneratorAdj
+{- Hint: 'updateWorld' is where the AI gets called. If the world state
+ indicates that it is a computer player's turn, updateWorld should use
+ 'getBestMove' to find where the computer player should play, and update
+ the board in the world state with that move.
+
+ At first, it is reasonable for this to be a random move!
+
+ If both players are human players, the simple version above will suffice,
+ since it does nothing.
+
+ In a complete implementation, 'updateWorld' should also check if either
+ player has won and display a message if so.
+-}
+
+undoMove :: World -> World
+undoMove (Play board turn)
+            = Play board (other turn)
