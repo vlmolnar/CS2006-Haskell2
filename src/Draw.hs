@@ -65,12 +65,12 @@ makePieces xs = pictures [if c == Black
 
 makeVictory :: Maybe Col --Colour of winner
               -> Picture
-makeVictory (Just Black) = Color white (Translate (-300) 0 (Text "Black wins!"))
-makeVictory (Just White) = Color white (Translate (-300) 0 (Text "White wins!"))
-makeVictory (Nothing) = Color white (Translate (-300) 0 (Text "It's a tie!"))
+makeVictory (Just Black) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "Black wins!")))
+makeVictory (Just White) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "White wins!")))
+makeVictory (Nothing) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "It's a tie!")))
 
 makeMenu :: Col -> Picture
-makeMenu c = Color white (Translate (-300) 0 (Text "Menu"))
+makeMenu c = Color white (translate (-300) 0 (Text "Menu"))
 
 -- Given a world state, return a Picture which will render the world state.
 -- Currently just draws a single blue circle as a placeholder.
@@ -83,7 +83,6 @@ drawWorld (Play board turn) = pictures
                            , makePieces (pieces board)
                            ]
 drawWorld (Victory winner) = makeVictory winner
-
 drawWorld (Menu colour) = makeMenu colour
 
 -- Reference: http://andrew.gibiansky.com/blog/haskell/haskell-gloss/
