@@ -65,8 +65,8 @@ makePieces xs = pictures [if c == Black
 
 makeVictory :: Col --Colour of winner
               -> Picture
-makeVictory Black = Color white (Translate (-250) 0 (Text "Black wins!"))
-makeVictory White = Color white (Translate (-250) 0 (Text "White wins!"))
+makeVictory Black = Color white (Translate (-300) 0 (Text "Black wins!"))
+makeVictory White = Color white (Translate (-300) 0 (Text "White wins!"))
 
 
 -- Given a world state, return a Picture which will render the world state.

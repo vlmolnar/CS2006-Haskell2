@@ -46,12 +46,14 @@ initBoard = Board 6 3 []
 -- Feel free to extend this, and 'Board' above with anything you think
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
-data World = World { board :: Board,
+data World = Play { board :: Board,
                      turn   :: Col,
                      winner :: Maybe Col
                    }
+              |Menu { playerCol :: Col }
+              |Victory { winner :: Maybe Col }
     deriving Show
-initWorld = World initBoard Black Nothing
+initWorld = Play initBoard Black Nothing
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
