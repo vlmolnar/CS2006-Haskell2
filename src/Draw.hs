@@ -63,6 +63,11 @@ makePieces xs = pictures [if c == Black
                           else whitePiece (xBase + (fromIntegral a) * squareWidth) (yBase - (fromIntegral b) * squareWidth)
                           | x <- xs, let a = fst (fst x), let b = snd (fst x), let c = snd x]
 
+makeVictory :: Col --Colour of winner
+              -> Picture
+makeVictory Black = Color white (Translate (-250) 0 (Text "Black wins!"))
+makeVictory White = Color white (Translate (-250) 0 (Text "White wins!"))
+
 
 -- Given a world state, return a Picture which will render the world state.
 -- Currently just draws a single blue circle as a placeholder.
@@ -70,9 +75,11 @@ makePieces xs = pictures [if c == Black
 -- This will need to extract the Board from the world state and draw it
 -- as a grid plus pieces.
 drawWorld :: World -> Picture
-drawWorld w = pictures
-  [ makeGrid (b_size (board w))
-  , makePieces (pieces (board w))
-  ]
+drawWorld w = do let victor = winner w
+                 case victor of Nothing -> pictures
+                                            [ makeGrid (b_size (board w))
+                                            , makePieces (pieces (board w))
+                                            ]
+                                Just col -> makeVictory col
 
 -- Reference: http://andrew.gibiansky.com/blog/haskell/haskell-gloss/
