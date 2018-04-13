@@ -42,8 +42,7 @@ getBoardCoord (x,y) = (round ((x - xBase) / squareWidth), (round ((yBase - y) / 
 makeWorld :: World -> (Int, Int) -> World
 makeWorld w pos = do let val = makeMove (board w) (turn w) pos
                      case val of Nothing  -> w
-                                 (Just b) -> updateWorld b (turn w)
-                                 -- (Just b) -> World b (other (turn w))
+                                 (Just b) -> World b (other (turn w)) Nothing
 
 
 {- Hint: when the 'World' is in a state where it is the human player's

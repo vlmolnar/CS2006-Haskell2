@@ -59,13 +59,18 @@ minimax g n False = minimum [(minimax (snd nextMove) (n - 1) True) | nextMove <-
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
-updateWorld t w | (turn w) == Black = World (board w) (other col)-- if human
-                | otherwise
-                      = World (fromJust (makeMove (board w) col pos)) (other col)
-                                where col = (turn w)
-                                      pos = getBestMove 2 (buildTree gen (board w) col )
-                                      gen = moveGeneratorAdj
+--updateWorld t w = w
+updateWorld t w  = do let winner = checkWon (board w) (pieces (board w))
+                      case winner of Nothing -> makeAIMove w
+                                     (Just c) -> World (board w) (turn w) (Just c)
 
+makeAIMove :: World -> World
+makeAIMove w  | (turn w) == Black = w
+              | otherwise
+                    = World (fromJust (makeMove (board w) col pos)) (other col) Nothing
+                              where col = (turn w)
+                                    pos = getBestMove 2 (buildTree gen (board w) col )
+                                    gen = moveGeneratorAdj
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
  'getBestMove' to find where the computer player should play, and update
