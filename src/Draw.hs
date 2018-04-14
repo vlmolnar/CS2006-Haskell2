@@ -12,7 +12,7 @@ pieceWidth :: Float
 pieceWidth = 20
 
 xBase :: Float
-xBase = (-240)
+xBase = (-220)
 
 yBase :: Float
 yBase = 200
@@ -72,8 +72,8 @@ makePieces xs = pictures [if c == Black
                           | x <- xs, let a = fst (fst x), let b = snd (fst x), let c = snd x]
 
 makeUndoButton :: Picture
-makeUndoButton = pictures [ Color white (translate (xBase * 1.2) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
-                          , Color (light black) (translate (xBase * 1.2 - buttonWidth / 2 + 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text "Undo")))
+makeUndoButton = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
+                          , Color (black) (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text "Undo")))
                           ]
 
 makePlayButton :: Picture
