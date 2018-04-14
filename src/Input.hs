@@ -20,6 +20,9 @@ yBase = 200
 buttonWidth :: Float
 buttonWidth = squareWidth / 1.5
 
+playWidth :: Float
+playWidth = squareWidth * 4
+
 -- Update the world state given an input event. Some sample input events
 -- are given; when they happen, there is a trace printed on the console
 --
@@ -46,7 +49,7 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Victory winner)
 
 --Handles UI on Menu screen
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Menu colour)
-    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) initWorld
+    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) playPress (Menu colour) (x,y)
 
 handleInput e b = b
 
@@ -69,6 +72,13 @@ undoPress (Play board turn) (x, y) | x >= (xBase * 1.2)
                                      && y <= yBase
                                      && y >= (yBase - buttonWidth) = undoMove (Play board turn)   --Updates world to previouss state
                                    | otherwise = (Play board turn)                                --Undo button not recognised
+
+playPress :: World -> (Float, Float) -> World
+playPress (Menu colour) (x,y) | x >= (-(playWidth/2))
+                                && x <= playWidth/2
+                                && y <= -100
+                                && y >= (-100 - squareWidth) = initWorld
+                              | otherwise = (Menu colour)
 
 {- Hint: when the 'World' is in a state where it is the human player's
  turn to move, a mouse press event should calculate which board position

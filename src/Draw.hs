@@ -20,6 +20,10 @@ yBase = 200
 buttonWidth :: Float
 buttonWidth = squareWidth / 1.5
 
+playWidth :: Float
+playWidth = squareWidth * 4
+
+
 
 --Returns single black piece
 blackPiece :: Float -> Float -> Picture
@@ -67,10 +71,17 @@ makePieces xs = pictures [if c == Black
                           else whitePiece (xBase + (fromIntegral a) * squareWidth) (yBase - (fromIntegral b) * squareWidth)
                           | x <- xs, let a = fst (fst x), let b = snd (fst x), let c = snd x]
 
-makeUndo :: Picture
-makeUndo = pictures [ Color white (translate (xBase * 1.2) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
-                    , Color (black) (scale 0.1 0.1 (translate (xBase * 1.2) (yBase - buttonWidth / 2) (Text "Undo")))
-                    ]
+makeUndoButton :: Picture
+makeUndoButton = pictures [ Color white (translate (xBase * 1.2) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
+                          , Color (black) (scale 0.1 0.1 (translate (xBase * 1.2) (yBase - buttonWidth / 2) (Text "Undo")))
+                          ]
+
+makePlayButton :: Picture
+makePlayButton = pictures [ Color white (translate 0 (-100) (rectangleSolid playWidth squareWidth))
+                          , Color (light black) (translate 0 (-100) (rectangleSolid (playWidth - 4) (squareWidth - 4)))
+                          , Color (white) (translate (- (playWidth/2 - 40)) (-115) (scale 0.3 0.3 (Text "New Game")))
+                          ]
+
 makeVictory :: Maybe Col --Colour of winner
               -> Picture
 makeVictory (Just Black) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "Black wins!")))
@@ -90,9 +101,12 @@ drawWorld :: World -> Picture
 drawWorld (Play board turn) = pictures
                            [ makeGrid (b_size board)
                            , makePieces (pieces board)
-                           , makeUndo
+                           , makeUndoButton
                            ]
 drawWorld (Victory winner) = makeVictory winner
-drawWorld (Menu colour) = makeMenu colour
+drawWorld (Menu colour) = pictures
+                        [ makeMenu colour
+                        , makePlayButton
+                        ]
 
 -- Reference: http://andrew.gibiansky.com/blog/haskell/haskell-gloss/
