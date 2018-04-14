@@ -1,6 +1,7 @@
 module Main where
 
 import Graphics.Gloss
+import System.Environment
 
 import Board
 import Draw
@@ -21,8 +22,20 @@ import AI
 -- move
 
 main :: IO ()
-main = play (InWindow "Gomoku" (640, 480) (10, 10))  (light black) 1
-            initWorld -- in Board.hs, provides world
+main = do
+          args <- getArgs
+          if null args
+              then runGame initWorld
+              else do size_string <- return (args !! 0)
+                      let size = read size_string :: Int
+                      col <- return (args !! 1)
+                      case col of
+                               "Black" -> runGame (Play (Board size (size `div` 2) []) White Black)
+                               otherwise->runGame (Play (Board size (size `div` 2) []) Black White)
+
+runGame :: World -> IO ()
+runGame world = play (InWindow "Gomoku" (640, 480) (10, 10))  (light black) 10
+            world -- in Board.hs, provides world
             drawWorld -- in Draw.hs, turns world into Picture
             handleInput -- in Input.hs, given an event, changes world
             updateWorld -- in AI.hs, IO

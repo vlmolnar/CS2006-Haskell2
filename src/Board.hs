@@ -47,12 +47,13 @@ initBoard = Board 6 3 []
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
 data World = Play { board :: Board,
-                     turn   :: Col
+                    turn   :: Col,
+                    ai_colour :: Col
                   }
               | Menu { playerCol :: Col }
               | Victory { winner :: Maybe Col }
     deriving Show
-initWorld = Play initBoard Black
+initWorld = Play initBoard Black White
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
@@ -103,9 +104,9 @@ checkDirections board piece =
 checkDirection :: Board -> Int -> Direction -> (Position, Col) -> Bool
 checkDirection board 1 (dirX, dirY) ((x,y), col) = True
 checkDirection board n (dirX, dirY) ((x,y), col)
-                            = if elem ((x - dirX, y - dirY), col) (pieces board)
-                                  then checkDirection board (n - 1) (dirX, dirY) ((x - dirX, y - dirY), col)
-                                  else False
+                  = if elem ((x - dirX, y - dirY), col) (pieces board)
+                        then checkDirection board (n - 1) (dirX, dirY) ((x - dirX, y - dirY), col)
+                        else False
 
 
 -- An evaluation function for a minimax search. Given a board and a colour
@@ -113,13 +114,13 @@ checkDirection board n (dirX, dirY) ((x,y), col)
 -- calls eval if no winner
 -- sets winners to +ve a million or -ve a million
 evaluate :: Board -> Col -> Int
-evaluate b c = case checkWon b (pieces b) of Nothing -> eval b c
+evaluate b c = case checkWon b (pieces b) of Nothing -> evalBoard b c
                                              Just x -> 10 ^ 6
 
 -- Evaluates a board with no winners checking all nodes for lines of
 -- consecutive colours
-eval :: Board -> Col -> Int
-eval b c = sum [evalPiece b (pos, col) | (pos, col) <- filter ((== c).snd) (pieces b)]
+evalBoard :: Board -> Col -> Int
+evalBoard b c = sum [evalPiece b (pos, col) | (pos, col) <- filter ((== c).snd) (pieces b)]
 
 -- evaluate all lines that start at a piece
 evalPiece :: Board -> (Position, Col) -> Int

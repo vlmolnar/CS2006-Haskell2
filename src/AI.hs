@@ -2,7 +2,7 @@ module AI where
 
 import Board
 import Data.Maybe
-import Data.Set
+import qualified Data.Set as Set
 
 data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
@@ -63,7 +63,7 @@ moveGenerator board col = [(x, y) | x <- [0.. (b_size board) - 1],
 -- convert to Data.set then back to list
 -- ref: https://stackoverflow.com/questions/16108714/removing-duplicates-from-a-list-in-haskell
 rmDup :: Ord a => [a] -> [a]
-rmDup = toList . fromList
+rmDup = Set.toList . Set.fromList
 
 -- generate all the empty positions adjacent to a piece from a list of pieces
 moveGeneratorAdj :: Board -> Col -> [(Int, Int)]
@@ -84,21 +84,22 @@ moveGeneratorAdjDiffParam board (p:ps) = rmDup ((getAdj board p) ++ moveGenerato
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
---updateWorld t w = w
-updateWorld t (Play board turn)
+updateWorld t (Play board turn ai)
                  = do let winner = checkWon board (pieces board)
-                      case winner of Nothing -> makeAIMove (Play board turn)
+                      case winner of Nothing -> makeAIMove (Play board turn ai)
                                      (Just c) -> Victory (Just c)
 updateWorld t (Victory winner) = Victory winner
 updateWorld t (Menu colour) = Menu colour
 
 makeAIMove :: World -> World
-makeAIMove (Play board turn)
-              | turn == Black = Play board turn
+makeAIMove (Play board turn ai)
+              | turn /= ai = Play board turn ai
               | otherwise
-                    = Play (fromJust (makeMove board turn pos)) (other turn)
+                    = Play (fromJust (makeMove board turn pos)) (other turn) ai
                               where pos = getBestMove 3 (buildTree gen board turn )
-                                    gen = moveGeneratorAdj
+                                    gen = if null (pieces board)
+                                              then moveGenerator
+                                              else moveGeneratorAdj
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
@@ -115,6 +116,7 @@ makeAIMove (Play board turn)
 -}
 
 undoMove :: World -> World
-undoMove (Play b turn)
-            = Play board (other turn)
-                where board = Board (b_size b) (target b) (drop 1 (pieces b))
+undoMove (Play b turn ai)
+            = Play board turn ai
+                where board = Board (b_size b) (target b) ps
+                      ps = if length (pieces b) < 2 then [] else drop 2 (pieces b)

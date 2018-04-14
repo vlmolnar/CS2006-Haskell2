@@ -32,15 +32,16 @@ playWidth = squareWidth * 4
 handleInput :: Event -> World -> World
 --Debugging
 handleInput (EventMotion (x, y)) w
-    = trace ("Mouse moved to: " ++ show (x,y)) w
+     -- = trace ("Mouse moved to: " ++ show (x,y)) w
+     = trace (show(w)) w
 
 --Handles UI during the game
-handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Play board turn)
-    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (makeWorld (Play board turn) (x,y))
-handleInput (EventKey (Char k) Down _ _) (Play board turn)
-    = trace ("Key " ++ show k ++ " down") (Play board turn)
-handleInput (EventKey (Char k) Up _ _) (Play board turn)
-    = trace ("Key " ++ show k ++ " up") (Play board turn)
+handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Play board turn ai)
+    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (makeWorld (Play board turn ai) (x,y))
+handleInput (EventKey (Char k) Down _ _) (Play board turn ai)
+    = trace ("Key " ++ show k ++ " down") (Play board turn ai)
+handleInput (EventKey (Char k) Up _ _) (Play board turn ai)
+    = trace ("Key " ++ show k ++ " up") (Play board turn ai)
 
 
 --Handles UI on Victory screen, proceeds to menu if the user clicks
@@ -60,24 +61,24 @@ getBoardCoord (x,y) = (round ((x - xBase) / squareWidth), (round ((yBase - y) / 
 
 --Updates world based on user input
 makeWorld :: World -> (Float, Float) -> World
-makeWorld (Play board turn) (x, y) = do let val = makeMove board turn (getBoardCoord (x,y))
-                                        case val of Nothing  -> undoPress (Play board turn) (x, y)
-                                                             -- (Play board turn)
-                                                    (Just b) -> Play b (other turn)
+makeWorld (Play board turn ai) (x, y) = do let val = makeMove board turn (getBoardCoord (x,y))
+                                           case val of Nothing  -> undoPress (Play board turn ai) (x, y)
+                                                             -- (Play board turn ai)
+                                                       (Just b) -> Play b (other turn) ai
 
 --Activates undo
 undoPress :: World -> (Float, Float) -> World
-undoPress (Play board turn) (x, y) | x >= (xBase * 1.2 - 20 - buttonWidth/2)
-                                     && x <= (xBase * 1.2 - 20 + buttonWidth/2)
-                                     && y <= yBase
-                                     && y >= (yBase - buttonWidth) = undoMove (Play board turn)   --Updates world to previouss state
-                                   | otherwise = (Play board turn)                                --Undo button not recognised
+undoPress (Play board turn ai) (x, y) | x >= (xBase * 1.2 - 20 - buttonWidth/2)
+                                        && x <= (xBase * 1.2 - 20 + buttonWidth/2)
+                                        && y <= yBase
+                                        && y >= (yBase - buttonWidth) = undoMove (Play board turn ai)   --Updates world to previouss state
+                                      | otherwise = (Play board turn ai)                                --Undo button not recognised
 
 playPress :: World -> (Float, Float) -> World
 playPress (Menu colour) (x,y) | x >= (-(playWidth/2))
                                 && x <= playWidth/2
                                 && y <= -100
-                                && y >= (-100 - squareWidth) = initWorld
+                                && y >= (-100 - squareWidth) = initWorld -- needs to be changed
                               | otherwise = (Menu colour)
 
 {- Hint: when the 'World' is in a state where it is the human player's
