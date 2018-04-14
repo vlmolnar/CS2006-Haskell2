@@ -73,7 +73,7 @@ makePieces xs = pictures [if c == Black
 
 makeUndoButton :: Picture
 makeUndoButton = pictures [ Color white (translate (xBase * 1.2) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
-                          , Color (black) (scale 0.1 0.1 (translate (xBase * 1.2) (yBase - buttonWidth / 2) (Text "Undo")))
+                          , Color (light black) (translate (xBase * 1.2 - buttonWidth / 2 + 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text "Undo")))
                           ]
 
 makePlayButton :: Picture

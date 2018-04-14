@@ -67,8 +67,8 @@ makeWorld (Play board turn) (x, y) = do let val = makeMove board turn (getBoardC
 
 --Activates undo
 undoPress :: World -> (Float, Float) -> World
-undoPress (Play board turn) (x, y) | x >= (xBase * 1.2)
-                                     && x <= (xBase * 1.2 + buttonWidth)
+undoPress (Play board turn) (x, y) | x >= (xBase * 1.2 - buttonWidth/2)
+                                     && x <= (xBase * 1.2 + buttonWidth/2)
                                      && y <= yBase
                                      && y >= (yBase - buttonWidth) = undoMove (Play board turn)   --Updates world to previouss state
                                    | otherwise = (Play board turn)                                --Undo button not recognised
