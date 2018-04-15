@@ -50,10 +50,17 @@ data World = Play { board :: Board,
                     turn   :: Col,
                     ai_colour :: Col
                   }
-              | Menu { playerCol :: Col }
+              | Menu {
+                  -- size :: Int,
+                  -- target :: Int,
+                  ai_color :: Col
+                  }
               | Victory { winner :: Maybe Col }
     deriving Show
 initWorld = Play initBoard Black White
+
+setWorld :: Int -> Int -> Col -> World
+setWorld size target col = Play (Board size target []) (other col) col
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)

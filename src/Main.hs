@@ -28,10 +28,12 @@ main = do
               then runGame initWorld
               else do size_string <- return (args !! 0)
                       let size = read size_string :: Int
-                      col <- return (args !! 1)
+                      ta <- return (args !! 1)
+                      let target = read ta :: Int
+                      col <- return (args !! 2)
                       case col of
-                               "Black" -> runGame (Play (Board size (size `div` 2) []) White Black)
-                               otherwise->runGame (Play (Board size (size `div` 2) []) Black White)
+                               "Black" -> runGame (Play (Board size target []) White Black)
+                               otherwise->runGame (Play (Board size target []) Black White)
 
 runGame :: World -> IO ()
 runGame world = play (InWindow "Gomoku" (640, 480) (10, 10))  (light black) 10

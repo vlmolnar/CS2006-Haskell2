@@ -78,7 +78,7 @@ playPress :: World -> (Float, Float) -> World
 playPress (Menu colour) (x,y) | x >= (-(playWidth/2))
                                 && x <= playWidth/2
                                 && y <= -100
-                                && y >= (-100 - squareWidth) = initWorld -- needs to be changed
+                                && y >= (-100 - squareWidth) = Play (Board 4 2 []) White Black -- needs to be changed
                               | otherwise = (Menu colour)
 
 {- Hint: when the 'World' is in a state where it is the human player's
