@@ -73,18 +73,25 @@ makePieces xs = pictures [if c == Black
 
 makeUndoButton :: Picture
 makeUndoButton = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
-                          , Color (black) (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text "Undo")))
+                          , Color (light black) (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                          , Color white (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text "Undo")))
                           ]
 
 makeSaveButton :: Picture
 makeSaveButton = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - squareWidth - buttonWidth/2) (rectangleSolid buttonWidth buttonWidth))
-                          , Color (black) (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - squareWidth - buttonWidth/2 - 5) (scale 0.1 0.1 (Text "Save")))
+                          , Color (light black) (translate (xBase * 1.2 - 20) (yBase - squareWidth - buttonWidth/2) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                          , Color white (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - squareWidth - buttonWidth/2 - 5) (scale 0.1 0.1 (Text "Save")))
                           ]
 
 makePlayButton :: Picture
-makePlayButton = pictures [ Color white (translate 0 (-100) (rectangleSolid playWidth squareWidth))
+makePlayButton = pictures [ --New Game
+                            Color white (translate 0 (-100) (rectangleSolid playWidth squareWidth))
                           , Color (light black) (translate 0 (-100) (rectangleSolid (playWidth - 4) (squareWidth - 4)))
                           , Color (white) (translate (- (playWidth/2 - 40)) (-115) (scale 0.3 0.3 (Text "New Game")))
+                          -- Load Game
+                          , Color white (translate 0 (-180) (rectangleSolid playWidth squareWidth))
+                          , Color (light black) (translate 0 (-180) (rectangleSolid (playWidth - 4) (squareWidth - 4)))
+                          , Color (white) (translate (- (playWidth/2 - 40)) (-195) (scale 0.3 0.3 (Text "Load Game")))
                           ]
 
 makeVictory :: Maybe Col --Colour of winner
@@ -93,17 +100,34 @@ makeVictory (Just Black) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text 
 makeVictory (Just White) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "White wins!")))
 makeVictory (Nothing) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "It's a tie!")))
 
--- makeGameMode :: GameMode -> Picture
--- makeGameMode mode = do case mode of PvP -> do let text = "PvP"
---                                     PvE -> do let text = "PvE"
---                                     EvE -> do let text = "EvE"
---                        pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
---                                 , Color (black) (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text text)))
---                                 ]
+makeGameMode :: GameMode -> Picture
+makeGameMode mode = pictures [ Color white (translate (-230) 150 (rectangleSolid (buttonWidth * 3) buttonWidth))
+                             , Color (light black) (translate (-230) 150 (rectangleSolid (buttonWidth * 3 - 4) (buttonWidth - 4)))
+                             , Color white (translate (-285) 145 (scale 0.1 0.1 (Text "Player vs Player")))
+                             ]
+                        -- where
+                        --   if mode == PvP then let text = "Player vs Player"
+                        --   else if mode == PvE then let text = "Player vs AI"
+                        --        else let text = "AI vs AI"
+
+makeAICol :: Col -> Picture
+makeAICol Black = pictures [ Color white (translate 0 150 (rectangleSolid buttonWidth buttonWidth))
+                           , Color black (translate 0 150 (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                           , Color white (translate (-6) 145 (scale 0.1 0.1 (Text "AI")))
+                           ]
+makeAICol White = pictures [ Color white (translate 0 150 (rectangleSolid buttonWidth buttonWidth))
+                           , Color (light black) (translate (-6) 145 (scale 0.1 0.1 (Text "AI")))
+                           ]
+
+--
+makeAIOptions :: Col -> Picture
+makeAIOptions c = case c of Black -> makeAICol White
+                            White -> makeAICol Black
+                            Empty -> Text ""
 
 
-makeMenu :: Col -> Picture
-makeMenu c = Color white (translate (-300) 0 (Text "Menu"))
+makeMenu :: Picture
+makeMenu = Color white (translate (-120) 180 (scale 0.5 0.5 (Text "Gomoku")))
 
 
 -- Given a world state, return a Picture which will render the world state.
@@ -120,9 +144,10 @@ drawWorld (Play board turn ai mode) = pictures
                            ]
 drawWorld (Victory winner) = makeVictory winner
 drawWorld (Menu size target mode colour) = pictures
-                        [ makeMenu colour
+                        [ makeMenu
                         , makePlayButton
-                        -- , makeGameMode mode
+                        , makeGameMode mode
+                        , makeAIOptions colour
                         ]
 
 -- Reference: http://andrew.gibiansky.com/blog/haskell/haskell-gloss/
