@@ -46,11 +46,11 @@ handleInput (EventKey (Char k) Up _ _) (Play board turn ai mode)
 
 --Handles UI on Victory screen, proceeds to menu if the user clicks
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Victory winner)
-    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) Menu Black
+    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (Menu 10 5 PvE Black)
 
 --Handles UI on Menu screen
-handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Menu colour)
-    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) playPress (Menu colour) (x,y)
+handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Menu size target mode colour)
+    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) playPress (Menu size target mode colour) (x,y)
 
 handleInput e b = b
 
@@ -74,12 +74,11 @@ undoPress (Play board turn ai mode) (x, y) | x >= (xBase * 1.2 - 20 - buttonWidt
                                       | otherwise = (Play board turn ai mode)                                --Undo button not recognised
 
 playPress :: World -> (Float, Float) -> World
-playPress (Menu colour) (x,y) | x >= (-(playWidth/2))
+playPress (Menu size target mode colour) (x,y) | x >= (-(playWidth/2))
                                 && x <= playWidth/2
                                 && y <= -100
                                 && y >= (-100 - squareWidth) = initWorld -- needs to be changed
-                              | otherwise = (Menu colour)
-
+                              | otherwise = (Menu size target mode colour)
 {- Hint: when the 'World' is in a state where it is the human player's
  turn to move, a mouse press event should calculate which board position
  a click refers to, and update the board accordingly.

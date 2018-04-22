@@ -35,7 +35,7 @@ boundsCheck n ((x, y), col) (dirX, dirY)
 -- Board 10 5 [((5, 5), Black), ((8,7), White)]
 
 data Board = Board { b_size :: Int,
-                     target :: Int,
+                     b_target :: Int,
                      pieces :: [(Position, Col)]
                    }
   deriving Show
@@ -56,8 +56,9 @@ data World = Play { board :: Board,
                     game_mode :: GameMode
                   }
               | Menu {
-                  -- size :: Int,
-                  -- target :: Int,
+                  size :: Int,
+                  target :: Int,
+                  game_mode :: GameMode,
                   ai_color :: Col
                   }
               | Victory { winner :: Maybe Col }
@@ -75,7 +76,7 @@ makeMove board col pos | fst pos < 0 = Nothing
                        | fst pos > (b_size board) - 1 = Nothing
                        | snd pos > (b_size board) - 1 = Nothing
                        | elem (pos, col) (pieces board) = Nothing
-                       | otherwise = Just (Board (b_size board) (target board) ((pos, col) : (pieces board)))
+                       | otherwise = Just (Board (b_size board) (b_target board) ((pos, col) : (pieces board)))
 
 
 {- Hint: One way to implement 'checkWon' would be to write functions
@@ -105,7 +106,7 @@ checkWon board (x:xs) = if checkDirections board x
 -- if list contains a True value return True else return False
 checkDirections :: Board -> (Position, Col) -> Bool
 checkDirections board piece =
-    or [checkDirection board (target board) (x, y) piece | x <- [-1, 0, 1],
+    or [checkDirection board (b_target board) (x, y) piece | x <- [-1, 0, 1],
                                                            y <- [-1, 0, 1],
                                                            (x, y) /= (0, 0)]
 

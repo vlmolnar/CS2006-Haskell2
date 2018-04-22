@@ -89,7 +89,7 @@ updateWorld t (Play board turn ai mode)
                       case winner of Nothing -> makeAIMove (Play board turn ai mode)
                                      (Just c) -> Victory (Just c)
 updateWorld t (Victory winner) = Victory winner
-updateWorld t (Menu colour) = Menu colour
+updateWorld t (Menu size b_target mode colour) = (Menu size b_target mode colour)
 
 makeAIMove :: World -> World
 makeAIMove (Play board turn ai mode)
@@ -118,5 +118,5 @@ makeAIMove (Play board turn ai mode)
 undoMove :: World -> World
 undoMove (Play b turn ai mode)
             = Play board turn ai mode
-                where board = Board (b_size b) (target b) ps
+                where board = Board (b_size b) (b_target b) ps
                       ps = if length (pieces b) < 2 then [] else drop 2 (pieces b)

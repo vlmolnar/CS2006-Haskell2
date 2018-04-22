@@ -104,7 +104,7 @@ drawWorld (Play board turn ai mode) = pictures
                            , makeUndoButton
                            ]
 drawWorld (Victory winner) = makeVictory winner
-drawWorld (Menu colour) = pictures
+drawWorld (Menu size target mode colour) = pictures
                         [ makeMenu colour
                         , makePlayButton
                         ]
