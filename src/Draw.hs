@@ -121,8 +121,8 @@ makeAICol White = pictures [ Color white (translate 0 150 (rectangleSolid button
 
 --
 makeAIOptions :: Col -> Picture
-makeAIOptions c = case c of Black -> makeAICol White
-                            White -> makeAICol Black
+makeAIOptions c = case c of Black -> makeAICol Black
+                            White -> makeAICol White
                             Empty -> Text ""
 
 

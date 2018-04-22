@@ -65,7 +65,7 @@ makeWorld (Play board turn ai mode) (x, y) = do let val = makeMove board turn (g
                                                 case val of Nothing  -> undoPress (Play board turn ai mode) (x, y)
                                                             (Just b) -> Play b (other turn) ai mode
 
---Activates undo
+--Checks for button clicks in Play
 undoPress :: World -> (Float, Float) -> World
 undoPress (Play board turn ai mode) (x, y) = if x >= (xBase * 1.2 - 20 - buttonWidth/2)  --Undo button
                                                 && x <= (xBase * 1.2 - 20 + buttonWidth/2)
@@ -80,12 +80,27 @@ undoPress (Play board turn ai mode) (x, y) = if x >= (xBase * 1.2 - 20 - buttonW
                                                 then undoMove (Play board turn ai mode) --TODO
                                               else (Play board turn ai mode)
 
+--Checks for button clicks in Menu
 playPress :: World -> (Float, Float) -> World
-playPress (Menu size target mode colour) (x,y) | x >= -140 --(-(playWidth/2))
-                                && x <= 140 --playWidth/2
-                                && y <= -65
-                                && y >= -130 = initWorld -- needs to be changed
-                              | otherwise = (Menu size target mode colour)
+playPress (Menu size target mode colour) (x,y) =
+                                    if x >= -140 --Play Game button
+                                      && x <= 140
+                                      && y <= -65
+                                      && y >= -130 then (Play (Board size target []) Black colour PvE) -- needs to be changed
+                              else if x >= -140 -- Load Game button
+                                      && x <= 140
+                                      && y <= -150
+                                      && y >= -215 then initWorld --TODO read from file instead of initworld
+                              else if x >= -140 -- Game mode button
+                                      && x <= 140
+                                      && y <= -150
+                                      && y >= -215 then initWorld --TODO change game mode
+                              else if x >= -20 -- AI colour button
+                                      && x <= 20
+                                      && y <= 170
+                                      && y >= 130 then (Menu size target mode (other colour)) --Changes AI colour
+                              else(Menu size target mode colour) --Click not on any buttons
+
 {- Hint: when the 'World' is in a state where it is the human player's
  turn to move, a mouse press event should calculate which board position
  a click refers to, and update the board accordingly.
