@@ -84,19 +84,19 @@ moveGeneratorAdjDiffParam board (p:ps) = rmDup ((getAdj board p) ++ moveGenerato
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
-updateWorld t (Play board turn ai)
+updateWorld t (Play board turn ai mode)
                  = do let winner = checkWon board (pieces board)
-                      case winner of Nothing -> makeAIMove (Play board turn ai)
+                      case winner of Nothing -> makeAIMove (Play board turn ai mode)
                                      (Just c) -> Victory (Just c)
 updateWorld t (Victory winner) = Victory winner
 updateWorld t (Menu colour) = Menu colour
 
 makeAIMove :: World -> World
-makeAIMove (Play board turn ai)
-              | turn /= ai = Play board turn ai
+makeAIMove (Play board turn ai mode)
+              | turn /= ai = Play board turn ai mode
               | otherwise
-                    = Play (fromJust (makeMove board turn pos)) (other turn) ai
-                              where pos = getBestMove 3 (buildTree gen board turn )
+                    = Play (fromJust (makeMove board turn pos)) (other turn) ai mode
+                              where pos = getBestMove 2 (buildTree gen board turn )
                                     gen = if null (pieces board)
                                               then moveGenerator
                                               else moveGeneratorAdj
@@ -116,7 +116,7 @@ makeAIMove (Play board turn ai)
 -}
 
 undoMove :: World -> World
-undoMove (Play b turn ai)
-            = Play board turn ai
+undoMove (Play b turn ai mode)
+            = Play board turn ai mode
                 where board = Board (b_size b) (target b) ps
                       ps = if length (pieces b) < 2 then [] else drop 2 (pieces b)

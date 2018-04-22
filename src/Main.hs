@@ -32,8 +32,8 @@ main = do
                       let target = read ta :: Int
                       col <- return (args !! 2)
                       case col of
-                               "Black" -> runGame (Play (Board size target []) White Black)
-                               otherwise->runGame (Play (Board size target []) Black White)
+                               "Black" -> runGame (Play (Board size target []) White Black PvE)
+                               otherwise->runGame (Play (Board size target []) Black White PvE)
 
 runGame :: World -> IO ()
 runGame world = play (InWindow "Gomoku" (640, 480) (10, 10))  (light black) 10

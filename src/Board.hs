@@ -1,5 +1,9 @@
 module Board where
 
+-- P: Player, E: Environment (AI)
+data GameMode = PvP | PvE | EvE
+  deriving (Show, Eq)
+
 data Col = Black | White | Empty
   deriving (Show, Eq)
 
@@ -48,7 +52,8 @@ initBoard = Board 6 3 []
 -- most recent moves were).
 data World = Play { board :: Board,
                     turn   :: Col,
-                    ai_colour :: Col
+                    ai_colour :: Col,
+                    game_mode :: GameMode
                   }
               | Menu {
                   -- size :: Int,
@@ -57,13 +62,13 @@ data World = Play { board :: Board,
                   }
               | Victory { winner :: Maybe Col }
     deriving Show
-initWorld = Play initBoard Black White
+initWorld = Play initBoard Black White PvE
 
-setWorld :: Int -> Int -> Col -> World
-setWorld size target col = Play (Board size target []) (other col) col
+setWorld :: Int -> Int -> Col -> GameMode -> World
+setWorld size target col mode = Play (Board size target []) (other col) col mode
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
--- (e.g. outside the range of the board, or there is a piece already there)
+-- (e.g. outside the range of the board, or there is a piece already there, or breaks the rules applied)
 makeMove :: Board -> Col -> Position -> Maybe Board
 makeMove board col pos | fst pos < 0 = Nothing
                        | snd pos < 0 = Nothing
@@ -115,14 +120,13 @@ checkDirection board n (dirX, dirY) ((x,y), col)
                         then checkDirection board (n - 1) (dirX, dirY) ((x - dirX, y - dirY), col)
                         else False
 
-
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 -- calls eval if no winner
 -- sets winners to +ve a million or -ve a million
 evaluate :: Board -> Col -> Int
 evaluate b c = case checkWon b (pieces b) of Nothing -> evalBoard b c
-                                             Just x -> 10 ^ 6
+                                             Just x -> 10 ^ (b_size b)
 
 -- Evaluates a board with no winners checking all nodes for lines of
 -- consecutive colours
@@ -159,9 +163,3 @@ evalDirection b n (dirX, dirY) ((x,y), col)
                   | x + dirX >= (b_size b) = 0 --bounds checks
                   | y + dirY >= (b_size b) = 0 --bounds checks
                   | otherwise = 10 ^ n --if at the end of the line
-
-
-
--- line inclosed both sides          = 0
--- line open with chance of winning  = 10 ^ n
--- line open both sides              = 10 ^ n *  2

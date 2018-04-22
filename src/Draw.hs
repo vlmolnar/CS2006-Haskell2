@@ -98,7 +98,7 @@ makeMenu c = Color white (translate (-300) 0 (Text "Menu"))
 -- This will need to extract the Board from the world state and draw it
 -- as a grid plus pieces.
 drawWorld :: World -> Picture
-drawWorld (Play board turn ai) = pictures
+drawWorld (Play board turn ai mode) = pictures
                            [ makeGrid (b_size board)
                            , makePieces (pieces board)
                            , makeUndoButton
