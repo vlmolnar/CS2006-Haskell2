@@ -76,6 +76,11 @@ makeUndoButton = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - b
                           , Color (black) (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text "Undo")))
                           ]
 
+makeSaveButton :: Picture
+makeSaveButton = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - squareWidth - buttonWidth/2) (rectangleSolid buttonWidth buttonWidth))
+                          , Color (black) (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - squareWidth - buttonWidth/2 - 5) (scale 0.1 0.1 (Text "Save")))
+                          ]
+
 makePlayButton :: Picture
 makePlayButton = pictures [ Color white (translate 0 (-100) (rectangleSolid playWidth squareWidth))
                           , Color (light black) (translate 0 (-100) (rectangleSolid (playWidth - 4) (squareWidth - 4)))
@@ -88,12 +93,14 @@ makeVictory (Just Black) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text 
 makeVictory (Just White) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "White wins!")))
 makeVictory (Nothing) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "It's a tie!")))
 
-makeGameMode :: Picture
-makeGameMode = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
-                        , Color (black) (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text text)))
-                        ]
-                where
-                  text = "PvE"
+-- makeGameMode :: GameMode -> Picture
+-- makeGameMode mode = do case mode of PvP -> do let text = "PvP"
+--                                     PvE -> do let text = "PvE"
+--                                     EvE -> do let text = "EvE"
+--                        pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
+--                                 , Color (black) (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text text)))
+--                                 ]
+
 
 makeMenu :: Col -> Picture
 makeMenu c = Color white (translate (-300) 0 (Text "Menu"))
@@ -109,11 +116,13 @@ drawWorld (Play board turn ai mode) = pictures
                            [ makeGrid (b_size board)
                            , makePieces (pieces board)
                            , makeUndoButton
+                           , makeSaveButton
                            ]
 drawWorld (Victory winner) = makeVictory winner
 drawWorld (Menu size target mode colour) = pictures
                         [ makeMenu colour
                         , makePlayButton
+                        -- , makeGameMode mode
                         ]
 
 -- Reference: http://andrew.gibiansky.com/blog/haskell/haskell-gloss/

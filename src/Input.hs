@@ -67,11 +67,18 @@ makeWorld (Play board turn ai mode) (x, y) = do let val = makeMove board turn (g
 
 --Activates undo
 undoPress :: World -> (Float, Float) -> World
-undoPress (Play board turn ai mode) (x, y) | x >= (xBase * 1.2 - 20 - buttonWidth/2)
-                                        && x <= (xBase * 1.2 - 20 + buttonWidth/2)
-                                        && y <= yBase
-                                        && y >= (yBase - buttonWidth) = undoMove (Play board turn ai mode)   --Updates world to previouss state
-                                      | otherwise = (Play board turn ai mode)                                --Undo button not recognised
+undoPress (Play board turn ai mode) (x, y) = if x >= (xBase * 1.2 - 20 - buttonWidth/2)  --Undo button
+                                                && x <= (xBase * 1.2 - 20 + buttonWidth/2)
+                                                && y <= yBase
+                                                && y >= (yBase - buttonWidth)
+                                                then undoMove (Play board turn ai mode)   --Updates world to previouss state
+                                            else
+                                              if x >= (xBase * 1.2 - 20 - buttonWidth/2) --Save Button
+                                                && x <= (xBase * 1.2 - 20 + buttonWidth/2)
+                                                && y <= yBase - squareWidth
+                                                && y >= (yBase - squareWidth - buttonWidth)
+                                                then undoMove (Play board turn ai mode) --TODO
+                                              else (Play board turn ai mode)
 
 playPress :: World -> (Float, Float) -> World
 playPress (Menu size target mode colour) (x,y) | x >= -140 --(-(playWidth/2))
