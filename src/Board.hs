@@ -14,6 +14,12 @@ data GameMode = PvP | PvE | EvE
 instance FromJSON GameMode
 instance ToJSON GameMode
 
+data Rule = Regular | Three | Four
+  deriving (Show, Eq, Generic, Read)
+
+instance FromJSON Rule
+instance ToJSON Rule
+
 data Col = Black | White | Empty
   deriving (Show, Eq, Generic, Read)
 
@@ -70,7 +76,8 @@ initBoard = Board 6 3 []
 data World = Play { board :: Board,
                     turn   :: Col,
                     ai_colour :: Col,
-                    game_mode :: GameMode
+                    game_mode :: GameMode,
+                    rule :: Rule
                   }
               | Menu {
                   size :: Int,
@@ -84,17 +91,15 @@ data World = Play { board :: Board,
 data Save = File { s_board :: Board,
                     s_turn   :: Col,
                     s_ai_colour :: Col,
-                    s_game_mode :: GameMode
+                    s_game_mode :: GameMode,
+                    s_Rule :: Rule
                   }
                 deriving (Show, Generic, Read)
 
 instance FromJSON Save
 instance ToJSON Save
 
-initWorld = Play initBoard Black White PvE
-
-setWorld :: Int -> Int -> Col -> GameMode -> World
-setWorld size target col mode = Play (Board size target []) (other col) col mode
+initWorld = Play initBoard Black White PvE Regular
 
 jsonFile :: FilePath
 jsonFile = "data/game_features.json"
@@ -109,10 +114,10 @@ readSave :: Maybe Save
 readSave = decode $ unsafePerformIO $ getJSON
 
 worldToSave :: World -> Save
-worldToSave (Play b t a m) = File b t a m
+worldToSave (Play b t a m r) = File b t a m r
 
 saveToWorld :: Maybe Save -> World
-saveToWorld (Just (File b t a m)) = Play b t a m
+saveToWorld (Just (File b t a m r)) = Play b t a m r
 
 writeSave :: Save -> World
 writeSave s =  unsafePerformIO $ do writeJSON (encode s)
@@ -122,7 +127,7 @@ writeSave s =  unsafePerformIO $ do writeJSON (encode s)
 
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
--- (e.g. outside the range of the board, or there is a piece already there, or breaks the rules applied)
+-- (e.g. outside the range of the board, or there is a piece already there, or breaks the Rule applied)
 makeMove :: Board -> Col -> Position -> Maybe Board
 makeMove board col pos | fst pos < 0 = Nothing
                        | snd pos < 0 = Nothing

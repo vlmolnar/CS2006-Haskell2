@@ -21,6 +21,11 @@ import AI
 -- and, if it is an AI's turn, should update the board with an AI generated
 -- move
 
+getRule :: [Char] -> Rule
+getRule "Regular" = Regular
+getRule "Three" = Three
+getRule "Four" = Four
+
 main :: IO ()
 main = do
           args <- getArgs
@@ -31,9 +36,10 @@ main = do
                       ta <- return (args !! 1)
                       let target = read ta :: Int
                       col <- return (args !! 2)
+                      rule <- return (args !! 3)
                       case col of
-                               "Black" -> runGame (Play (Board size target []) White Black PvE)
-                               otherwise->runGame (Play (Board size target []) Black White PvE)
+                               "Black" -> runGame (Play (Board size target []) White Black PvE $ getRule rule)
+                               otherwise->runGame (Play (Board size target []) Black White PvE $ getRule rule)
 
 runGame :: World -> IO ()
 runGame world = play (InWindow "Gomoku" (640, 480) (10, 10))  (light black) 10
