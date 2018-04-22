@@ -88,6 +88,13 @@ makeVictory (Just Black) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text 
 makeVictory (Just White) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "White wins!")))
 makeVictory (Nothing) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "It's a tie!")))
 
+makeGameMode :: Picture
+makeGameMode = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
+                        , Color (black) (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text text)))
+                        ]
+                where
+                  text = "PvE"
+
 makeMenu :: Col -> Picture
 makeMenu c = Color white (translate (-300) 0 (Text "Menu"))
 

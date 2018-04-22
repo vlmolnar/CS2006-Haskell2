@@ -74,10 +74,10 @@ undoPress (Play board turn ai mode) (x, y) | x >= (xBase * 1.2 - 20 - buttonWidt
                                       | otherwise = (Play board turn ai mode)                                --Undo button not recognised
 
 playPress :: World -> (Float, Float) -> World
-playPress (Menu size target mode colour) (x,y) | x >= (-(playWidth/2))
-                                && x <= playWidth/2
-                                && y <= -100
-                                && y >= (-100 - squareWidth) = initWorld -- needs to be changed
+playPress (Menu size target mode colour) (x,y) | x >= -140 --(-(playWidth/2))
+                                && x <= 140 --playWidth/2
+                                && y <= -65
+                                && y >= -130 = initWorld -- needs to be changed
                               | otherwise = (Menu size target mode colour)
 {- Hint: when the 'World' is in a state where it is the human player's
  turn to move, a mouse press event should calculate which board position
