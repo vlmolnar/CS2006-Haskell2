@@ -103,7 +103,7 @@ makeVictory (Nothing) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "It
 makeGameMode :: GameMode -> Picture
 makeGameMode mode = pictures [ Color white (translate (-230) 150 (rectangleSolid (buttonWidth * 3) buttonWidth))
                              , Color (light black) (translate (-230) 150 (rectangleSolid (buttonWidth * 3 - 4) (buttonWidth - 4)))
-                             , Color white (translate (-285) 145 (scale 0.1 0.1 (Text "Player vs Player")))
+                             , Color white (translate (-285) 145 (scale 0.1 0.1 (Text "Player vs AI")))
                              ]
                         -- where
                         --   if mode == PvP then let text = "Player vs Player"
@@ -125,6 +125,36 @@ makeAIOptions c = case c of Black -> makeAICol Black
                             White -> makeAICol White
                             Empty -> Text ""
 
+
+makeBoardButtons :: Int -> Picture
+makeBoardButtons size = pictures [--Number display
+                                   Color white (translate (-230) 5 (rectangleSolid (buttonWidth * 3) buttonWidth))
+                                 , Color (light black) (translate (-230) 5 (rectangleSolid (buttonWidth * 3 - 4) (buttonWidth - 4)))
+                                 , Color white (translate (-285) 3 (scale 0.1 0.1 (Text (show size))))
+                                 --Up button
+                                 , Color white (translate (-135) 30 (rectangleSolid (buttonWidth) buttonWidth))
+                                 , Color (light black) (translate (-135) 30 (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                                 , Color white (translate (-147) 15 (scale 0.3 0.3 (Text "^")))
+                                 -- Down button
+                                 , Color white (translate (-135) (30 - buttonWidth) (rectangleSolid (buttonWidth) buttonWidth))
+                                 , Color (light black) (translate (-135) (30 - buttonWidth) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                                 , Color white (translate (-145) (17 - buttonWidth) (scale 0.3 0.3 (Text "v")))
+                                 ]
+
+makeTargetButtons :: Int -> Picture
+makeTargetButtons target = pictures [--Number display
+                                  Color white (translate (50) 5 (rectangleSolid (buttonWidth * 3) buttonWidth))
+                                , Color (light black) (translate (50) 5 (rectangleSolid (buttonWidth * 3 - 4) (buttonWidth - 4)))
+                                , Color white (translate (0) 3 (scale 0.1 0.1 (Text (show target))))
+                                --Up button
+                                , Color white (translate (145) 30 (rectangleSolid (buttonWidth) buttonWidth))
+                                , Color (light black) (translate (145) 30 (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                                , Color white (translate (135) 15 (scale 0.3 0.3 (Text "^")))
+                                -- Down button
+                                , Color white (translate (145) (30 - buttonWidth) (rectangleSolid (buttonWidth) buttonWidth))
+                                , Color (light black) (translate (145) (30 - buttonWidth) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                                , Color white (translate (137) (17 - buttonWidth) (scale 0.3 0.3 (Text "v")))
+                                ]
 
 makeMenu :: Picture
 makeMenu = Color white (translate (-120) 180 (scale 0.5 0.5 (Text "Gomoku")))
@@ -148,6 +178,8 @@ drawWorld (Menu size target mode colour) = pictures
                         , makePlayButton
                         , makeGameMode mode
                         , makeAIOptions colour
+                        , makeBoardButtons size
+                        , makeTargetButtons target
                         ]
 
 -- Reference: http://andrew.gibiansky.com/blog/haskell/haskell-gloss/

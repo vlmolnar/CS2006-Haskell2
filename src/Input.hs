@@ -68,25 +68,25 @@ makeWorld (Play board turn ai mode rule) (x, y) = do let val = makeMove board tu
 --Checks for button clicks in Play
 undoPress :: World -> (Float, Float) -> World
 undoPress (Play board turn ai mode rule) (x, y) = if x >= (xBase * 1.2 - 20 - buttonWidth/2)  --Undo button
-                                                && x <= (xBase * 1.2 - 20 + buttonWidth/2)
-                                                && y <= yBase
-                                                && y >= (yBase - buttonWidth)
-                                                then undoMove (Play board turn ai mode rule)   --Updates world to previouss state
-                                            else
-                                              if x >= (xBase * 1.2 - 20 - buttonWidth/2) --Save Button
-                                                && x <= (xBase * 1.2 - 20 + buttonWidth/2)
-                                                && y <= yBase - squareWidth
-                                                && y >= (yBase - squareWidth - buttonWidth)
-                                                then writeSave $ worldToSave (Play board turn ai mode rule)
-                                              else (Play board turn ai mode rule)
+                                                    && x <= (xBase * 1.2 - 20 + buttonWidth/2)
+                                                    && y <= yBase
+                                                    && y >= (yBase - buttonWidth)
+                                                    then undoMove (Play board turn ai mode rule)   --Updates world to previouss state
+                                                else
+                                                  if x >= (xBase * 1.2 - 20 - buttonWidth/2) --Save Button
+                                                    && x <= (xBase * 1.2 - 20 + buttonWidth/2)
+                                                    && y <= yBase - squareWidth
+                                                    && y >= (yBase - squareWidth - buttonWidth)
+                                                    then writeSave $ worldToSave (Play board turn ai mode rule)
+                                                  else (Play board turn ai mode rule)
 
 --Checks for button clicks in Menu
 playPress :: World -> (Float, Float) -> World
 playPress (Menu size target mode colour) (x,y) =
-                                    if x >= -140 --Play Game button
+                                    if x >= -140 --New Game button
                                       && x <= 140
                                       && y <= -65
-                                      && y >= -130 then (Play (Board size target []) Black colour PvE Regular) -- TODO ADD Rule TO MENU- needs to be changed
+                                      && y >= -130 then (Play (Board size target []) Black colour PvE Regular) -- needs to be changed
                               else if x >= -140 -- Load Game button
                                       && x <= 140
                                       && y <= -150
@@ -99,7 +99,27 @@ playPress (Menu size target mode colour) (x,y) =
                                       && x <= 20
                                       && y <= 170
                                       && y >= 130 then (Menu size target mode (other colour)) --Changes AI colour
-                              else(Menu size target mode colour) --Click not on any buttons
+                              else if x >= -155 -- Board size up
+                                      && x <= -115
+                                      && y <= 50
+                                      && y >= 10 then if size + 1 <= 19 then(Menu (size+1) target mode colour)
+                                                      else (Menu size target mode colour)
+                              else if x >= -155 -- Board size down
+                                      && x <= -115
+                                      && y <= 5
+                                      && y >= -38 then if size - 1 >= 3 && size - 1 >= target then(Menu (size-1) target mode colour)
+                                                    else (Menu size target mode colour)
+                              else if x >= 125 -- Target size up
+                                      && x <= 165
+                                      && y <= 50
+                                      && y >= 10 then if target + 1 <= size then(Menu size (target+1) mode colour)
+                                                      else (Menu size target mode colour)
+                              else if x >= 125 -- Target size down
+                                      && x <= 165
+                                      && y <= 5
+                                      && y >= -38 then if target - 1 >= 3 then(Menu size (target-1) mode colour)
+                                                    else (Menu size target mode colour)
+                              else (Menu size target mode colour) --Click not on any buttons
 
 {- Hint: when the 'World' is in a state where it is the human player's
  turn to move, a mouse press event should calculate which board position
