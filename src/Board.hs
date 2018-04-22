@@ -97,7 +97,7 @@ setWorld :: Int -> Int -> Col -> GameMode -> World
 setWorld size target col mode = Play (Board size target []) (other col) col mode
 
 jsonFile :: FilePath
-jsonFile = "../data/game_features.json"
+jsonFile = "data/game_features.json"
 
 getJSON :: IO B.ByteString
 getJSON = B.readFile jsonFile
@@ -114,8 +114,9 @@ worldToSave (Play b t a m) = File b t a m
 saveToWorld :: Maybe Save -> World
 saveToWorld (Just (File b t a m)) = Play b t a m
 
-writeSave :: Save -> IO ()
-writeSave s = writeJSON (encode s)
+writeSave :: Save -> World
+writeSave s =  unsafePerformIO $ do writeJSON (encode s)
+                                    return $ saveToWorld (Just s)
 
 -- GAME LOGIC --
 

@@ -77,7 +77,7 @@ undoPress (Play board turn ai mode) (x, y) = if x >= (xBase * 1.2 - 20 - buttonW
                                                 && x <= (xBase * 1.2 - 20 + buttonWidth/2)
                                                 && y <= yBase - squareWidth
                                                 && y >= (yBase - squareWidth - buttonWidth)
-                                                then undoMove (Play board turn ai mode) --TODO
+                                                then writeSave $ worldToSave (Play board turn ai mode)
                                               else (Play board turn ai mode)
 
 --Checks for button clicks in Menu
@@ -90,7 +90,7 @@ playPress (Menu size target mode colour) (x,y) =
                               else if x >= -140 -- Load Game button
                                       && x <= 140
                                       && y <= -150
-                                      && y >= -215 then initWorld --TODO read from file instead of initworld
+                                      && y >= -215 then saveToWorld readSave--TODO read from file instead of initworld
                               else if x >= -140 -- Game mode button
                                       && x <= 140
                                       && y <= -150
