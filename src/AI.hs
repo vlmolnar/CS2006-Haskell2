@@ -86,7 +86,7 @@ updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World
 updateWorld t (Play board turn ai mode rule)
                  = do let winner = checkWon board (pieces board)
-                      case winner of Nothing -> makeAIMove (Play board turn ai mode rule)
+                      case winner of Nothing -> if (length $pieces board) < (b_size board) ^ 2 then makeAIMove (Play board turn ai mode rule) else Victory Nothing
                                      (Just c) -> Victory (Just c)
 updateWorld t (Victory winner) = Victory winner
 updateWorld t (Menu size b_target mode colour) = (Menu size b_target mode colour)
