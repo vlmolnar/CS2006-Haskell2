@@ -1,11 +1,24 @@
+{-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+
 module Board where
+
+import Data.Aeson
+import GHC.Generics
+import qualified Data.ByteString.Lazy as B
+import System.IO.Unsafe
 
 -- P: Player, E: Environment (AI)
 data GameMode = PvP | PvE | EvE
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic, Read)
+
+instance FromJSON GameMode
+instance ToJSON GameMode
 
 data Col = Black | White | Empty
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic, Read)
+
+instance FromJSON Col
+instance ToJSON Col
 
 other :: Col -> Col
 other Black = White
@@ -34,11 +47,15 @@ boundsCheck n ((x, y), col) (dirX, dirY)
 --
 -- Board 10 5 [((5, 5), Black), ((8,7), White)]
 
-data Board = Board { b_size :: Int,
+data Board = Board {
+                     b_size :: Int,
                      b_target :: Int,
                      pieces :: [(Position, Col)]
                    }
-  deriving Show
+  deriving (Show, Generic, Read)
+
+instance FromJSON Board
+instance ToJSON Board
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
 initBoard = Board 6 3 []
@@ -62,11 +79,46 @@ data World = Play { board :: Board,
                   ai_color :: Col
                   }
               | Victory { winner :: Maybe Col }
-    deriving Show
+    deriving (Show, Generic, Read)
+
+data Save = File { s_board :: Board,
+                    s_turn   :: Col,
+                    s_ai_colour :: Col,
+                    s_game_mode :: GameMode
+                  }
+                deriving (Show, Generic, Read)
+
+instance FromJSON Save
+instance ToJSON Save
+
 initWorld = Play initBoard Black White PvE
 
 setWorld :: Int -> Int -> Col -> GameMode -> World
 setWorld size target col mode = Play (Board size target []) (other col) col mode
+
+jsonFile :: FilePath
+jsonFile = "../data/game_features.json"
+
+getJSON :: IO B.ByteString
+getJSON = B.readFile jsonFile
+
+writeJSON :: B.ByteString -> IO ()
+writeJSON string = B.writeFile jsonFile string
+
+readSave :: Maybe Save
+readSave = decode $ unsafePerformIO $ getJSON
+
+worldToSave :: World -> Save
+worldToSave (Play b t a m) = File b t a m
+
+saveToWorld :: Maybe Save -> World
+saveToWorld (Just (File b t a m)) = Play b t a m
+
+writeSave :: Save -> IO ()
+writeSave s = writeJSON (encode s)
+
+-- GAME LOGIC --
+
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there, or breaks the rules applied)
