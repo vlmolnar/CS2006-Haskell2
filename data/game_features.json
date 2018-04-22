@@ -1,1 +1,1 @@
-{"s_Rule":"Regular","s_game_mode":"PvE","s_ai_colour":"Black","s_board":{"b_size":10,"b_target":5,"pieces":[[[8,7],"Black"],[[1,2],"White"],[[8,8],"Black"]]},"s_turn":"White"}
+{"s_Rule":"Regular","s_game_mode":"PvE","s_ai_colour":"Black","s_board":{"b_size":10,"b_target":5,"pieces":[[[8,5],"Black"],[[0,1],"White"],[[8,6],"Black"],[[2,2],"White"],[[8,7],"Black"],[[1,1],"White"],[[8,8],"Black"]]},"s_turn":"White"}

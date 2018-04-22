@@ -102,7 +102,7 @@ playPress (Menu size target mode colour) (x,y) =
                               else if x >= -155 -- Board size up
                                       && x <= -115
                                       && y <= 50
-                                      && y >= 10 then if size + 1 <= 19 then(Menu (size+1) target mode colour)
+                                      && y >= 10 then if size + 1 <= 10 then(Menu (size+1) target mode colour)
                                                       else (Menu size target mode colour)
                               else if x >= -155 -- Board size down
                                       && x <= -115
