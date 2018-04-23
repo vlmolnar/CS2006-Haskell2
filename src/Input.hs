@@ -23,17 +23,11 @@ buttonWidth = squareWidth / 1.5
 playWidth :: Float
 playWidth = squareWidth * 4
 
--- Update the world state given an input event. Some sample input events
--- are given; when they happen, there is a trace printed on the console
---
--- trace :: String -> a -> a
--- 'trace' returns its second argument while printing its first argument
--- to stderr, which can be a very useful way of debugging!
+-- Update the world state given an input event
 handleInput :: Event -> World -> World
 --Debugging
 handleInput (EventMotion (x, y)) w
      = trace ("Mouse moved to: " ++ show (x,y)) w
-     -- = trace (show(w)) w
 
 --Handles UI during the game
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Play board turn ai mode rule)
