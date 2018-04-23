@@ -119,7 +119,16 @@ playPress (Menu size target mode colour) (x,y) =
                                       && y <= 5
                                       && y >= -38 then if target - 1 >= 3 then(Menu size (target-1) mode colour)
                                                     else (Menu size target mode colour)
+                              else if x >= -300 -- Change game mode
+                                      && x <= -160
+                                      && y <= 170
+                                      && y >= 130 then (Menu size target (switchGameMode mode) colour)
                               else (Menu size target mode colour) --Click not on any buttons
+
+switchGameMode :: GameMode -> GameMode
+switchGameMode PvP = PvE
+switchGameMode PvE = EvE
+switchGameMode EvE = PvP
 
 {- Hint: when the 'World' is in a state where it is the human player's
  turn to move, a mouse press event should calculate which board position

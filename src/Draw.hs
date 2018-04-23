@@ -101,14 +101,15 @@ makeVictory (Just White) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text 
 makeVictory (Nothing) = Color white (scale 0.8 0.8 (translate (-350) 0 (Text "It's a tie!")))
 
 makeGameMode :: GameMode -> Picture
-makeGameMode mode = pictures [ Color white (translate (-230) 150 (rectangleSolid (buttonWidth * 3) buttonWidth))
+makeGameMode PvP = drawGameMode "Player vs Player"
+makeGameMode PvE = drawGameMode "Player vs AI"
+makeGameMode EvE = drawGameMode "AI vs AI"
+
+drawGameMode :: String -> Picture
+drawGameMode msg = pictures [ Color white (translate (-230) 150 (rectangleSolid (buttonWidth * 3) buttonWidth))
                              , Color (light black) (translate (-230) 150 (rectangleSolid (buttonWidth * 3 - 4) (buttonWidth - 4)))
-                             , Color white (translate (-285) 145 (scale 0.1 0.1 (Text "Player vs AI")))
+                             , Color white (translate (-285) 145 (scale 0.1 0.1 (Text msg)))
                              ]
-                        -- where
-                        --   if mode == PvP then let text = "Player vs Player"
-                        --   else if mode == PvE then let text = "Player vs AI"
-                        --        else let text = "AI vs AI"
 
 makeAICol :: Col -> Picture
 makeAICol Black = pictures [ Color white (translate 0 150 (rectangleSolid buttonWidth buttonWidth))
@@ -120,10 +121,11 @@ makeAICol White = pictures [ Color white (translate 0 150 (rectangleSolid button
                            ]
 
 --
-makeAIOptions :: Col -> Picture
-makeAIOptions c = case c of Black -> makeAICol Black
-                            White -> makeAICol White
-                            Empty -> Text ""
+makeAIOptions :: GameMode -> Col -> Picture
+makeAIOptions mode c = if mode == PvP then Text ""  --If no AI is used, the button is not displayed
+                       else case c of Black -> makeAICol Black
+                                      White -> makeAICol White
+                                      Empty -> Text ""
 
 
 makeBoardButtons :: Int -> Picture
@@ -177,7 +179,7 @@ drawWorld (Menu size target mode colour) = pictures
                         [ makeMenu
                         , makePlayButton
                         , makeGameMode mode
-                        , makeAIOptions colour
+                        , makeAIOptions mode colour
                         , makeBoardButtons size
                         , makeTargetButtons target
                         ]
