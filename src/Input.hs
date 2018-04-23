@@ -61,6 +61,7 @@ getBoardCoord (x,y) = (round ((x - xBase) / squareWidth), (round ((yBase - y) / 
 
 --Updates world based on user input
 makeWorld :: World -> (Float, Float) -> World
+-- Checks for button clicks on board, makes a move if it's legal
 makeWorld (Play board turn ai mode rule) (x, y) = do let val = makeMove board turn (getBoardCoord (x,y))
                                                      case val of Nothing  -> undoPress (Play board turn ai mode rule) (x, y)
                                                                  (Just b) -> Play b (other turn) ai mode rule
@@ -71,7 +72,7 @@ undoPress (Play board turn ai mode rule) (x, y) = if x >= (xBase * 1.2 - 20 - bu
                                                     && x <= (xBase * 1.2 - 20 + buttonWidth/2)
                                                     && y <= yBase
                                                     && y >= (yBase - buttonWidth)
-                                                    then undoMove (Play board turn ai mode rule)   --Updates world to previouss state
+                                                    then undoMove (Play board turn ai mode rule) --Updates world to previouss state
                                                 else
                                                   if x >= (xBase * 1.2 - 20 - buttonWidth/2) --Save Button
                                                     && x <= (xBase * 1.2 - 20 + buttonWidth/2)
@@ -86,15 +87,11 @@ playPress (Menu size target mode colour) (x,y) =
                                     if x >= -140 --New Game button
                                       && x <= 140
                                       && y <= -65
-                                      && y >= -130 then (Play (Board size target []) Black colour PvE Regular) -- needs to be changed
+                                      && y >= -130 then (Play (Board size target []) Black colour mode Regular) -- Starts new game with settings
                               else if x >= -140 -- Load Game button
                                       && x <= 140
                                       && y <= -150
-                                      && y >= -215 then saveToWorld readSave--TODO read from file instead of initworld
-                              else if x >= -140 -- Game mode button
-                                      && x <= 140
-                                      && y <= -150
-                                      && y >= -215 then initWorld --TODO change game mode
+                                      && y >= -215 then saveToWorld readSave -- Reads from file to load saved state
                               else if x >= -20 -- AI colour button
                                       && x <= 20
                                       && y <= 170
@@ -102,37 +99,31 @@ playPress (Menu size target mode colour) (x,y) =
                               else if x >= -155 -- Board size up
                                       && x <= -115
                                       && y <= 50
-                                      && y >= 10 then if size + 1 <= 10 then(Menu (size+1) target mode colour)
+                                      && y >= 10 then if size + 1 <= 10 then(Menu (size+1) target mode colour) -- Increments board size by 1
                                                       else (Menu size target mode colour)
                               else if x >= -155 -- Board size down
                                       && x <= -115
                                       && y <= 5
-                                      && y >= -38 then if size - 1 >= 3 && size - 1 >= target then(Menu (size-1) target mode colour)
-                                                    else (Menu size target mode colour)
+                                      && y >= -38 then if size - 1 >= 3 && size - 1 >= target then(Menu (size-1) target mode colour) -- Decrements board size by 1
+                                                       else (Menu size target mode colour)
                               else if x >= 125 -- Target size up
                                       && x <= 165
                                       && y <= 50
-                                      && y >= 10 then if target + 1 <= size then(Menu size (target+1) mode colour)
+                                      && y >= 10 then if target + 1 <= size then(Menu size (target+1) mode colour) -- Increments target size by 1
                                                       else (Menu size target mode colour)
                               else if x >= 125 -- Target size down
                                       && x <= 165
                                       && y <= 5
-                                      && y >= -38 then if target - 1 >= 3 then(Menu size (target-1) mode colour)
-                                                    else (Menu size target mode colour)
+                                      && y >= -38 then if target - 1 >= 3 then(Menu size (target-1) mode colour) -- Decrements target size by 1
+                                                       else (Menu size target mode colour)
                               else if x >= -300 -- Change game mode
                                       && x <= -160
                                       && y <= 170
-                                      && y >= 130 then (Menu size target (switchGameMode mode) colour)
+                                      && y >= 130 then (Menu size target (switchGameMode mode) colour) -- Changes game mode
                               else (Menu size target mode colour) --Click not on any buttons
 
+-- GameMode button functionality, switches from one mode to another
 switchGameMode :: GameMode -> GameMode
 switchGameMode PvP = PvE
 switchGameMode PvE = EvE
 switchGameMode EvE = PvP
-
-{- Hint: when the 'World' is in a state where it is the human player's
- turn to move, a mouse press event should calculate which board position
- a click refers to, and update the board accordingly.
-
- At first, it is reasonable to assume that both players are human players.
--}

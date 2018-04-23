@@ -14,26 +14,31 @@ data GameMode = PvP | PvE | EvE
 instance FromJSON GameMode
 instance ToJSON GameMode
 
+--House rules
 data Rule = Regular | Three | Four
   deriving (Show, Eq, Generic, Read)
 
 instance FromJSON Rule
 instance ToJSON Rule
 
+-- Piece colours
 data Col = Black | White | Empty
   deriving (Show, Eq, Generic, Read)
 
 instance FromJSON Col
 instance ToJSON Col
 
+-- Switches colours
 other :: Col -> Col
 other Black = White
 other White = Black
+other Empty = Empty
 
 type Position = (Int, Int)
 
 type Direction = (Int, Int)
 
+--Reverses direction
 oppDir :: Direction -> Direction
 oppDir (x, y) = (-x, -y)
 
@@ -101,12 +106,15 @@ instance ToJSON Save
 
 initWorld = Play initBoard Black White PvE Regular
 
+-- Save file path
 jsonFile :: FilePath
 jsonFile = "data/game_features.json"
 
+--Reads in save file
 getJSON :: IO B.ByteString
 getJSON = B.readFile jsonFile
 
+--Writes to save file
 writeJSON :: B.ByteString -> IO ()
 writeJSON string = B.writeFile jsonFile string
 
@@ -122,9 +130,9 @@ saveToWorld (Just (File b t a m r)) = Play b t a m r
 writeSave :: Save -> World
 writeSave s =  unsafePerformIO $ do writeJSON (encode s)
                                     return $ saveToWorld (Just s)
-
+----------------
 -- GAME LOGIC --
-
+----------------
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there, or breaks the Rule applied)
@@ -135,20 +143,6 @@ makeMove board col pos | fst pos < 0 = Nothing
                        | snd pos > (b_size board) - 1 = Nothing
                        | elem (pos, col) (pieces board) = Nothing
                        | otherwise = Just (Board (b_size board) (b_target board) ((pos, col) : (pieces board)))
-
-
-{- Hint: One way to implement 'checkWon' would be to write functions
-which specifically check for lines in all 8 possible directions
-(NW, N, NE, E, W, SE, SW)
-
-In these functions:
-To check for a line of n in a row in a direction D:
-For every position ((x, y), col) in the 'pieces' list:
-- if n == 1, the colour 'col' has won
-- if n > 1, move one step in direction D, and check for a line of
- n-1 in a row.
- -}
-
 
 -- Check whether the board is in a winning state for either player.
 -- Returns 'Nothing' if neither player has won yet
