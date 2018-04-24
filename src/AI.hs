@@ -131,7 +131,6 @@ makeAIMove (Play b turn ai mode)
  player has won and display a message if so.
 -}
 
-
 -- This function changes the state of the world to 2 moves previously
 -- This decision to move 2 moves back is that the AI moves so fast that one move
 -- back is redundant as the AI will make the same move
@@ -140,3 +139,13 @@ undoMove (Play b turn ai mode)
           = Play board turn ai mode
               where board = Board (b_size b) (b_target b) (b_rule b) ps
                     ps = if length (pieces b) < 2 then [] else drop 2 (pieces b)
+
+-- This function returns the position to display as a hint for the user
+-- It u
+getHint :: World -> Position
+getHint (Play b turn ai mode)
+        | turn /= ai = pos
+                where pos = getBestMove 2 (buildTree gen b turn)
+                      gen = if null (pieces b)
+                                then moveGenerator
+                                else moveGeneratorAdj

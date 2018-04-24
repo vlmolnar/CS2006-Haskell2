@@ -116,9 +116,16 @@ makeMove b col pos r  | fst pos < 0 = Nothing
                               = if (enforceRules b r col pos)
                                       then Just (Board (b_size b) (b_target b) (b_rule b) ((pos, col) : (pieces b)))
                                       else Nothing
+-----------------
+-- HOUSE RULES --
+-----------------
 
-
-
+-- This function check for the rules chosen by the user at the command line
+-- It preemptively places the move on the board and checks whether it conforms
+-- to the rules chosen 
+-- Regular: no rules chosen
+-- Three: three and three rule
+-- Four: Four and Four
 enforceRules :: Board -> Rule -> Col -> Position -> Bool
 enforceRules b Regular c p = True
 enforceRules b Three c p = houseRule (Board s t r ps) ps 3
@@ -158,15 +165,6 @@ houseRuleDirection b n (dirX, dirY) ((x, y), col)
                                 | x + dirX >= (b_size b) = True --bounds checks
                                 | y + dirY >= (b_size b) = True --bounds checks
                                 | otherwise = False -- empty
-
--- This function returns the list of directions where the piece in the opposite
--- direction is empty
--- (See diragram in report for further explaining)
-getDirectionsToEvalForHouseRules ::  Board -> Col -> (Position, Col) -> [Direction]
-getDirectionsToEvalForHouseRules b c piece = [ oppDir (x, y) | x <- [-1, 0, 1],
-                                                               y <- [-1, 0, 1],
-                                                               (checkNextPiece b (x, y) piece) == Empty]
-
 
 ----------------------
 -- CHECK FOR WINNER --
@@ -226,14 +224,6 @@ evalPiece b (pos, col) =
                 dir <- getDirections func b col (pos, col)]
                       where func = (\b p x y -> (checkNextPiece b (x, y) p) /= col)
 
--- This function returns the colour of the next piece in the direction passed
--- Empty is used for a position not yet occupied
-checkNextPiece :: Board -> Direction -> (Position, Col) -> Col
-checkNextPiece b (dirX, dirY) ((x, y), col)
-                | elem ((x + dirX, y + dirY), col) (pieces b) = col
-                | elem ((x + dirX, y + dirY), (other col)) (pieces b) = (other col)
-                | otherwise = Empty
-
 -- evaluate direction
 -- if same colour +1
 -- if other other colour
@@ -261,3 +251,11 @@ getDirections :: (Board -> (Position, Col) -> Int -> Int -> Bool) -> Board -> Co
 getDirections predicate b c (pos, col) = [ (x, y) | x <- [-1, 0, 1],
                                           y <- [-1, 0, 1],
                                           predicate b (pos, col) x y]
+
+-- This function returns the colour of the next piece in the direction passed
+-- Empty is used for a position not yet occupied
+checkNextPiece :: Board -> Direction -> (Position, Col) -> Col
+checkNextPiece b (dirX, dirY) ((x, y), col)
+                | elem ((x + dirX, y + dirY), col) (pieces b) = col
+                | elem ((x + dirX, y + dirY), (other col)) (pieces b) = (other col)
+                | otherwise = Empty
