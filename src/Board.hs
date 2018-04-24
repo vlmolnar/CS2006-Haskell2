@@ -187,15 +187,18 @@ evalBoard :: Board -> Col -> Int
 evalBoard b c = sum [evalPiece b (pos, col) | (pos, col) <- filter ((== c).snd) (pieces b)]
 
 -- evaluate all lines that start at a piece
+-- line is consective pieces of the same colour
 evalPiece :: Board -> (Position, Col) -> Int
 evalPiece b (pos, col) = sum [evalDirection b 1 dir (pos, col) | dir <- (getDirectionsToEval b col (pos, col))]
 
-
+-- This function returns a list of direction in which a piece of the same colour
+-- is not present
 getDirectionsToEval :: Board -> Col -> (Position, Col) -> [Direction]
 getDirectionsToEval b c piece = [ oppDir (x, y) | x <- [-1, 0, 1],
                                                   y <- [-1, 0, 1],
                                                   (checkNextPiece b (x, y) piece) /= c]
-
+-- This function returns the colour of the next piece in the direction passed
+-- Empty is used for a position not yet occupied
 checkNextPiece :: Board -> Direction -> (Position, Col) -> Col
 checkNextPiece b (dirX, dirY) ((x, y), col)
                 | elem ((x + dirX, y + dirY), col) (pieces b) = col
@@ -206,6 +209,9 @@ checkNextPiece b (dirX, dirY) ((x, y), col)
 -- if same colour +1
 -- if other other colour
 -- if blank return value
+-- This function takes a board, number of consective peices, direction of travel
+-- and a piece
+-- It returns a value assigned to this line, 10 ^ 4 for four pieces in a row. 
 evalDirection :: Board -> Int -> Direction -> (Position, Col) -> Int
 evalDirection b n (dirX, dirY) ((x,y), col)
                   |  elem ((x + dirX, y + dirY), col) (pieces b) -- if same colour

@@ -66,7 +66,7 @@ undoPress (Play board turn ai mode rule) (x, y) = if x >= (xBase * 1.2 - 20 - bu
                                                     && x <= (xBase * 1.2 - 20 + buttonWidth/2)
                                                     && y <= yBase
                                                     && y >= (yBase - buttonWidth)
-                                                    then undoMove (Play board turn ai mode rule) --Updates world to previouss state
+                                                    then undoMove (Play board turn ai mode rule) --Updates world to previous state
                                                 else
                                                   if x >= (xBase * 1.2 - 20 - buttonWidth/2) --Save Button
                                                     && x <= (xBase * 1.2 - 20 + buttonWidth/2)
