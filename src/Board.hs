@@ -102,7 +102,7 @@ data Save = File { s_board :: Board,
 instance FromJSON Save
 instance ToJSON Save
 
-initWorld = Play initBoard Black White PvE Regular
+initWorld = (Menu 6 3 PvE Black)
 
 ----------------
 -- GAME LOGIC --
@@ -110,14 +110,63 @@ initWorld = Play initBoard Black White PvE Regular
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there, or breaks the Rule applied)
-makeMove :: Board -> Col -> Position -> Maybe Board
-makeMove board col pos | fst pos < 0 = Nothing
-                       | snd pos < 0 = Nothing
-                       | fst pos > (b_size board) - 1 = Nothing
-                       | snd pos > (b_size board) - 1 = Nothing
-                       | elem (pos, col) (pieces board) = Nothing
-                       | otherwise = Just (Board (b_size board) (b_target board) ((pos, col) : (pieces board)))
+makeMove :: Board -> Col -> Position -> Rule -> Maybe Board
+makeMove b col pos r  | fst pos < 0 = Nothing
+                          | snd pos < 0 = Nothing
+                          | fst pos > (b_size b) - 1 = Nothing
+                          | snd pos > (b_size b) - 1 = Nothing
+                          | elem (pos, col) (pieces b) = Nothing
+                          | otherwise
+                              = if (enforceRules b r col pos)
+                                      then Just (Board (b_size b) (b_target b) ((pos, col) : (pieces b)))
+                                      else Nothing
 
+
+
+enforceRules :: Board -> Rule -> Col -> Position -> Bool
+enforceRules b Regular c p = True
+enforceRules b Three c p = houseRule (Board (b_size b) (b_target b) ps) ps 3
+                                      where ps = ((p,c) : (pieces b))
+enforceRules b Four c p = houseRule (Board (b_size b) (b_target b) ps) ps 4
+                                      where ps = ((p,c) : (pieces b))
+
+houseRule :: Board -> [(Position, Col)] -> Int -> Bool
+houseRule b [] n = True
+houseRule b (x:xs) n = if houseRulePiece b x n
+                          then houseRule b xs n
+                          else False
+
+houseRulePiece :: Board -> (Position, Col) -> Int -> Bool
+houseRulePiece b (pos, col) n = and [houseRuleDirection b n dir (pos, col) |
+                                        dir <- (getDirectionsToEvalForHouseRules b col (pos,col))]
+
+houseRuleDirection :: Board -> Int -> Direction -> (Position, Col) -> Bool
+houseRuleDirection b 1 dir piece = if checkNextPiece b dir piece == Empty then False else True
+houseRuleDirection b n (dirX, dirY) ((x, y), col)
+                                | checkNextPiece b (dirX, dirY) ((x, y), col) == col -- if same colour
+                                    = houseRuleDirection b (n - 1) (dirX, dirY) ((x + dirX, y + dirY), col)
+                                | checkNextPiece b (dirX, dirY) ((x, y), col) == (other col)
+                                    = True
+                                | checkNextPiece b (dirX, dirY) ((x, y), col) == Empty
+                                    = True
+                                | x + dirX < 0 = True         --bounds checks
+                                | y + dirY < 0 = True         --bounds checks
+                                | x + dirX >= (b_size b) = True --bounds checks
+                                | y + dirY >= (b_size b) = True --bounds checks
+                                | otherwise = False -- empty
+
+-- This function returns the list of directions where the piece in the opposite
+-- direction is empty
+-- (See diragram in report for further explaining)
+getDirectionsToEvalForHouseRules ::  Board -> Col -> (Position, Col) -> [Direction]
+getDirectionsToEvalForHouseRules b c piece = [ oppDir (x, y) | x <- [-1, 0, 1],
+                                                               y <- [-1, 0, 1],
+                                                               (checkNextPiece b (x, y) piece) == Empty]
+
+
+----------------------
+-- CHECK FOR WINNER --
+----------------------
 -- Check whether the board is in a winning state for either player.
 -- Returns 'Nothing' if neither player has won yet
 -- Returns 'Just c' if the player 'c' has won
@@ -146,6 +195,11 @@ checkDirection board n (dirX, dirY) ((x,y), col)
                   = if elem ((x - dirX, y - dirY), col) (pieces board)
                         then checkDirection board (n - 1) (dirX, dirY) ((x - dirX, y - dirY), col)
                         else False
+
+
+-------------------------------
+-- EVALUATE THE BOARD FOR AI --
+-------------------------------
 
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.

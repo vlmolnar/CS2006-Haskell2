@@ -22,16 +22,17 @@ data GameTree = GameTree { game_board :: Board,
 buildTree :: (Board -> Col -> [Position]) -- ^ Move generator
              -> Board -- ^ board state
              -> Col -- ^ player to play next
+             -> Rule
              -> GameTree
-buildTree gen board col = let moves = gen board col in -- generated moves
+buildTree gen board col r = let moves = gen board col in -- generated moves
                         GameTree board col (mkNextStates moves)
   where
     mkNextStates :: [Position] -> [(Position, GameTree)]
     mkNextStates [] = []
     mkNextStates (pos : xs)
-        = case makeMove board col pos of -- try making the suggested move
+        = case makeMove board col pos r of -- try making the suggested move
                Nothing -> mkNextStates xs -- not successful, no new state
-               Just b' -> (pos, buildTree gen b' (other col)) : mkNextStates xs
+               Just b' -> (pos, buildTree gen b' (other col) r) : mkNextStates xs
                              -- successful, make move and build tree from
                              -- here for opposite player
 
@@ -110,8 +111,8 @@ makeAIMove :: World -> World
 makeAIMove (Play board turn ai mode rule)
                 | mode == PvP || (mode == PvE && turn /= ai) = Play board turn ai mode rule
                 | otherwise
-                      = Play (fromJust (makeMove board turn pos)) (other turn) ai mode rule
-                                where pos = getBestMove 2 (buildTree gen board turn )
+                      = Play (fromJust (makeMove board turn pos rule)) (other turn) ai mode rule
+                                where pos = getBestMove 2 (buildTree gen board turn rule)
                                       gen = if null (pieces board)
                                                 then moveGenerator
                                                 else moveGeneratorAdj

@@ -57,7 +57,7 @@ getBoardCoord (x,y) = (round ((x - xBase) / squareWidth), (round ((yBase - y) / 
 --Updates world based on user input
 makeWorld :: World -> (Float, Float) -> World
 -- Checks for button clicks on board, makes a move if it's legal
-makeWorld (Play board turn ai mode rule) (x, y) = do let val = makeMove board turn (getBoardCoord (x,y))
+makeWorld (Play board turn ai mode rule) (x, y) = do let val = makeMove board turn (getBoardCoord (x,y)) rule
                                                      case val of Nothing  -> undoPress (Play board turn ai mode rule) (x, y)
                                                                  (Just b) -> Play b (other turn) ai mode rule
 
@@ -104,7 +104,7 @@ playPress (Menu size target mode colour) (x,y) =
                               else if x >= 125 -- Target size up
                                       && x <= 165
                                       && y <= 50
-                                      && y >= 10 then if target + 1 <= size then(Menu size (target+1) mode colour) -- Increments target size by 1
+                                      && y >= 10 then if target + 1 <= size && target + 1 <= 5 then(Menu size (target+1) mode colour) -- Increments target size by 1
                                                       else (Menu size target mode colour)
                               else if x >= 125 -- Target size down
                                       && x <= 165
