@@ -130,7 +130,7 @@ makeAICol White = pictures [ Color white (translate 0 150 (rectangleSolid button
 
 -- Checks if AI is present in game, and if so displays its colour on Menu screen
 makeAIOptions :: GameMode -> Col -> Picture
-makeAIOptions mode c = if mode == PvP then Text ""  --If no AI is used, the button is not displayed
+makeAIOptions mode c = if mode /= PvE then Text ""  --If no AI is used, the button is not displayed
                        else case c of Black -> makeAICol Black
                                       White -> makeAICol White
                                       Empty -> Text ""
