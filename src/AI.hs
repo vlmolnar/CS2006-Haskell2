@@ -22,17 +22,16 @@ data GameTree = GameTree { game_board :: Board,
 buildTree :: (Board -> Col -> [Position]) -- ^ Move generator
              -> Board -- ^ board state
              -> Col -- ^ player to play next
-             -> Rule
              -> GameTree
-buildTree gen board col r = let moves = gen board col in -- generated moves
+buildTree gen board col = let moves = gen board col in -- generated moves
                         GameTree board col (mkNextStates moves)
   where
     mkNextStates :: [Position] -> [(Position, GameTree)]
     mkNextStates [] = []
     mkNextStates (pos : xs)
-        = case makeMove board col pos r of -- try making the suggested move
+        = case makeMove board col pos (b_rule board) of -- try making the suggested move
                Nothing -> mkNextStates xs -- not successful, no new state
-               Just b' -> (pos, buildTree gen b' (other col) r) : mkNextStates xs
+               Just b' -> (pos, buildTree gen b' (other col))  : mkNextStates xs
                              -- successful, make move and build tree from
                              -- here for opposite player
 
@@ -92,10 +91,10 @@ rmDup = Set.toList . Set.fromList
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
-updateWorld t (Play board turn ai mode rule)
+updateWorld t (Play board turn ai mode)
                  = do let winner = checkWon board (pieces board)
                       case winner of Nothing -> if (length $pieces board) < (b_size board) ^ 2 -- if there is a tie
-                                                    then makeAIMove (Play board turn ai mode rule)
+                                                    then makeAIMove (Play board turn ai mode)
                                                     else Victory Nothing
                                      (Just c) -> Victory (Just c)
 updateWorld t (Victory winner) = Victory winner
@@ -108,12 +107,12 @@ updateWorld t (Menu size b_target mode colour) = (Menu size b_target mode colour
 -- spaces adjacent to other moves. The best move uses a depth of 2 for the
 -- GameTree
 makeAIMove :: World -> World
-makeAIMove (Play board turn ai mode rule)
-                | mode == PvP || (mode == PvE && turn /= ai) = Play board turn ai mode rule
+makeAIMove (Play b turn ai mode)
+                | mode == PvP || (mode == PvE && turn /= ai) = Play b turn ai mode
                 | otherwise
-                      = Play (fromJust (makeMove board turn pos rule)) (other turn) ai mode rule
-                                where pos = getBestMove 2 (buildTree gen board turn rule)
-                                      gen = if null (pieces board)
+                      = Play (fromJust (makeMove b turn pos (b_rule b))) (other turn) ai mode
+                                where pos = getBestMove 2 (buildTree gen b turn)
+                                      gen = if null (pieces b)
                                                 then moveGenerator
                                                 else moveGeneratorAdj
 
@@ -137,7 +136,7 @@ makeAIMove (Play board turn ai mode rule)
 -- This decision to move 2 moves back is that the AI moves so fast that one move
 -- back is redundant as the AI will make the same move
 undoMove :: World -> World
-undoMove (Play b turn ai mode rule)
-            = Play board turn ai mode rule
-                where board = Board (b_size b) (b_target b) ps
-                      ps = if length (pieces b) < 2 then [] else drop 2 (pieces b)
+undoMove (Play b turn ai mode)
+          = Play board turn ai mode
+              where board = Board (b_size b) (b_target b) (b_rule b) ps
+                    ps = if length (pieces b) < 2 then [] else drop 2 (pieces b)

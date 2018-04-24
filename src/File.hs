@@ -33,8 +33,8 @@ writeSave s =  unsafePerformIO $ do writeJSON (encode s)
 
 -- This function converts the world Play type to the Save type
 worldToSave :: World -> Save
-worldToSave (Play b t a m r) = File b t a m r
+worldToSave (Play b t a m) = File b t a m
 
 -- This function converts a Save object to a World object
 saveToWorld :: Maybe Save -> World
-saveToWorld (Just (File b t a m r)) = Play b t a m r
+saveToWorld (Just (File b t a m)) = Play b t a m

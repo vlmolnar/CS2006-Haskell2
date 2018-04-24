@@ -31,17 +31,17 @@ handleInput (EventMotion (x, y)) w
      = trace ("Mouse moved to: " ++ show (x,y)) w
 
 --Handles UI during the game
-handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Play board turn ai mode rule)
-    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (makeWorld (Play board turn ai mode rule) (x,y))
-handleInput (EventKey (Char k) Down _ _) (Play board turn ai mode rule)
-    = trace ("Key " ++ show k ++ " down") (Play board turn ai mode rule)
-handleInput (EventKey (Char k) Up _ _) (Play board turn ai mode rule)
-    = trace ("Key " ++ show k ++ " up") (Play board turn ai mode rule)
+handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Play board turn ai mode)
+    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (makeWorld (Play board turn ai mode) (x,y))
+handleInput (EventKey (Char k) Down _ _) (Play board turn ai mode)
+    = trace ("Key " ++ show k ++ " down") (Play board turn ai mode)
+handleInput (EventKey (Char k) Up _ _) (Play board turn ai mode)
+    = trace ("Key " ++ show k ++ " up") (Play board turn ai mode)
 
 
 --Handles UI on Victory screen, proceeds to menu if the user clicks
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Victory winner)
-    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (Menu 10 5 PvE Black)
+    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (Menu 6 3 PvE Black)
 
 --Handles UI on Menu screen
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Menu size target mode colour)
@@ -57,24 +57,24 @@ getBoardCoord (x,y) = (round ((x - xBase) / squareWidth), (round ((yBase - y) / 
 --Updates world based on user input
 makeWorld :: World -> (Float, Float) -> World
 -- Checks for button clicks on board, makes a move if it's legal
-makeWorld (Play board turn ai mode rule) (x, y) = do let val = makeMove board turn (getBoardCoord (x,y)) rule
-                                                     case val of Nothing  -> undoPress (Play board turn ai mode rule) (x, y)
-                                                                 (Just b) -> Play b (other turn) ai mode rule
+makeWorld (Play board turn ai mode) (x, y) = do let val = makeMove board turn (getBoardCoord (x,y)) (b_rule board)
+                                                case val of Nothing  -> undoPress (Play board turn ai mode) (x, y)
+                                                            (Just b) -> Play b (other turn) ai mode
 
 --Checks for button clicks in Play
 undoPress :: World -> (Float, Float) -> World
-undoPress (Play board turn ai mode rule) (x, y) = if x >= (xBase * 1.2 - 20 - buttonWidth/2)  --Undo button
+undoPress (Play board turn ai mode) (x, y) = if x >= (xBase * 1.2 - 20 - buttonWidth/2)  --Undo button
                                                     && x <= (xBase * 1.2 - 20 + buttonWidth/2)
                                                     && y <= yBase
                                                     && y >= (yBase - buttonWidth)
-                                                    then undoMove (Play board turn ai mode rule) --Updates world to previous state
+                                                    then undoMove (Play board turn ai mode) --Updates world to previous state
                                                 else
                                                   if x >= (xBase * 1.2 - 20 - buttonWidth/2) --Save Button
                                                     && x <= (xBase * 1.2 - 20 + buttonWidth/2)
                                                     && y <= yBase - squareWidth
                                                     && y >= (yBase - squareWidth - buttonWidth)
-                                                    then writeSave $ worldToSave (Play board turn ai mode rule)
-                                                  else (Play board turn ai mode rule)
+                                                    then writeSave $ worldToSave (Play board turn ai mode)
+                                                  else (Play board turn ai mode)
 
 --Checks for button clicks in Menu
 playPress :: World -> (Float, Float) -> World
@@ -82,7 +82,7 @@ playPress (Menu size target mode colour) (x,y) =
                                     if x >= -140 --New Game button
                                       && x <= 140
                                       && y <= -65
-                                      && y >= -130 then (Play (Board size target []) Black colour mode Regular) -- Starts new game with settings
+                                      && y >= -130 then (Play (Board size target Regular []) Black colour mode) -- Starts new game with settings
                               else if x >= -140 -- Load Game button
                                       && x <= 140
                                       && y <= -150

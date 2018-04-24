@@ -174,7 +174,7 @@ makeLogo = Color white (translate (-120) 180 (scale 0.5 0.5 (Text "Gomoku")))
 
 -- Given a world state, return a Picture which will render the world state
 drawWorld :: World -> Picture
-drawWorld (Play board turn ai mode rule) = pictures
+drawWorld (Play board turn ai mode) = pictures
                            [ makeGrid (b_size board)
                            , makePieces (pieces board)
                            , makeUndoButton

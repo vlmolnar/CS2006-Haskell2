@@ -8,21 +8,18 @@ import GHC.Generics
 -- P: Player, E: Environment (AI)
 data GameMode = PvP | PvE | EvE
   deriving (Show, Eq, Generic, Read)
-
 instance FromJSON GameMode
 instance ToJSON GameMode
 
 --House rules
 data Rule = Regular | Three | Four
   deriving (Show, Eq, Generic, Read)
-
 instance FromJSON Rule
 instance ToJSON Rule
 
 -- Piece colours
 data Col = Black | White | Empty
   deriving (Show, Eq, Generic, Read)
-
 instance FromJSON Col
 instance ToJSON Col
 
@@ -42,7 +39,7 @@ oppDir (x, y) = (-x, -y)
 
 boundsCheck :: Int -> (Position, Col) -> (Direction) -> Bool
 boundsCheck n ((x, y), col) (dirX, dirY)
-    |x + dirX < 0 = False          --bounds checks
+    | x + dirX < 0 = False          --bounds checks
     | y + dirY < 0 = False         --bounds checks
     | x + dirX >= n = False --bounds checks
     | y + dirY >= n = False --bounds checks
@@ -59,6 +56,7 @@ boundsCheck n ((x, y), col) (dirX, dirY)
 data Board = Board {
                      b_size :: Int,
                      b_target :: Int,
+                     b_rule :: Rule,
                      pieces :: [(Position, Col)]
                    }
   deriving (Show, Generic, Read)
@@ -67,7 +65,7 @@ instance FromJSON Board
 instance ToJSON Board
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
-initBoard = Board 6 3 []
+initBoard = Board 6 3 Regular []
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -79,8 +77,7 @@ initBoard = Board 6 3 []
 data World = Play { board :: Board,
                     turn   :: Col,
                     ai_colour :: Col,
-                    game_mode :: GameMode,
-                    rule :: Rule
+                    game_mode :: GameMode
                   }
               | Menu {
                   size :: Int,
@@ -94,8 +91,7 @@ data World = Play { board :: Board,
 data Save = File { s_board :: Board,
                     s_turn   :: Col,
                     s_ai_colour :: Col,
-                    s_game_mode :: GameMode,
-                    s_Rule :: Rule
+                    s_game_mode :: GameMode
                   }
                 deriving (Show, Generic, Read)
 
@@ -118,17 +114,23 @@ makeMove b col pos r  | fst pos < 0 = Nothing
                           | elem (pos, col) (pieces b) = Nothing
                           | otherwise
                               = if (enforceRules b r col pos)
-                                      then Just (Board (b_size b) (b_target b) ((pos, col) : (pieces b)))
+                                      then Just (Board (b_size b) (b_target b) (b_rule b) ((pos, col) : (pieces b)))
                                       else Nothing
 
 
 
 enforceRules :: Board -> Rule -> Col -> Position -> Bool
 enforceRules b Regular c p = True
-enforceRules b Three c p = houseRule (Board (b_size b) (b_target b) ps) ps 3
+enforceRules b Three c p = houseRule (Board s t r ps) ps 3
                                       where ps = ((p,c) : (pieces b))
-enforceRules b Four c p = houseRule (Board (b_size b) (b_target b) ps) ps 4
+                                            s = (b_size b)
+                                            t = (b_target b)
+                                            r = (b_rule b)
+enforceRules b Four c p = houseRule (Board s t r ps) ps 4
                                       where ps = ((p,c) : (pieces b))
+                                            s = (b_size b)
+                                            t = (b_target b)
+                                            r = (b_rule b)
 
 houseRule :: Board -> [(Position, Col)] -> Int -> Bool
 houseRule b [] n = True
@@ -137,8 +139,10 @@ houseRule b (x:xs) n = if houseRulePiece b x n
                           else False
 
 houseRulePiece :: Board -> (Position, Col) -> Int -> Bool
-houseRulePiece b (pos, col) n = and [houseRuleDirection b n dir (pos, col) |
-                                        dir <- (getDirectionsToEvalForHouseRules b col (pos,col))]
+houseRulePiece b (pos, col) n =
+  and [houseRuleDirection b n dir (pos, col) |
+          dir <- getDirections func b col (pos, col)]
+                  where func = (\b p x y -> (checkNextPiece b (x, y) p) == Empty)
 
 houseRuleDirection :: Board -> Int -> Direction -> (Position, Col) -> Bool
 houseRuleDirection b 1 dir piece = if checkNextPiece b dir piece == Empty then False else True
@@ -180,10 +184,10 @@ checkWon board (x:xs) = if checkDirections board x
 -- build a [Bool] with the value for every direction
 -- if list contains a True value return True else return False
 checkDirections :: Board -> (Position, Col) -> Bool
-checkDirections board piece =
-    or [checkDirection board (b_target board) (x, y) piece | x <- [-1, 0, 1],
-                                                           y <- [-1, 0, 1],
-                                                           (x, y) /= (0, 0)]
+checkDirections board (pos, col) =
+    or [checkDirection board (b_target board) dir (pos, col) |
+          dir <- getDirections func board col (pos, col)]
+                    where func = (\b p x y -> (x,y) /= (0, 0))
 
 -- This function implements the hint provided below
 -- Params are the board, n in a row, the direction of travel, a piece
@@ -217,14 +221,11 @@ evalBoard b c = sum [evalPiece b (pos, col) | (pos, col) <- filter ((== c).snd) 
 -- evaluate all lines that start at a piece
 -- line is consective pieces of the same colour
 evalPiece :: Board -> (Position, Col) -> Int
-evalPiece b (pos, col) = sum [evalDirection b 1 dir (pos, col) | dir <- (getDirectionsToEval b col (pos, col))]
+evalPiece b (pos, col) =
+        sum [evalDirection b 1 (oppDir dir) (pos, col) |
+                dir <- getDirections func b col (pos, col)]
+                      where func = (\b p x y -> (checkNextPiece b (x, y) p) /= col)
 
--- This function returns a list of direction in which a piece of the same colour
--- is not present
-getDirectionsToEval :: Board -> Col -> (Position, Col) -> [Direction]
-getDirectionsToEval b c piece = [ oppDir (x, y) | x <- [-1, 0, 1],
-                                                  y <- [-1, 0, 1],
-                                                  (checkNextPiece b (x, y) piece) /= c]
 -- This function returns the colour of the next piece in the direction passed
 -- Empty is used for a position not yet occupied
 checkNextPiece :: Board -> Direction -> (Position, Col) -> Col
@@ -250,3 +251,13 @@ evalDirection b n (dirX, dirY) ((x,y), col)
                   | x + dirX >= (b_size b) = 0 --bounds checks
                   | y + dirY >= (b_size b) = 0 --bounds checks
                   | otherwise = 10 ^ n --if at the end of the line
+
+
+-- This function returns a list of directions dependent on the predicate passed
+-- check for win uses: (x, y) /= (0, 0) -- all 8 directions (N, NE, E, SE, S, SW, W, NW)
+-- Eval board uses: (checkNextPiece b (x, y) piece) /= c -- does the next piece that direction have the same colour
+-- House rules uses: (checkNextPiece b (x, y) piece) == Empty
+getDirections :: (Board -> (Position, Col) -> Int -> Int -> Bool) -> Board -> Col -> (Position, Col) -> [Direction]
+getDirections predicate b c (pos, col) = [ (x, y) | x <- [-1, 0, 1],
+                                          y <- [-1, 0, 1],
+                                          predicate b (pos, col) x y]
