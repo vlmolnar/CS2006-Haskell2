@@ -95,13 +95,14 @@ updateWorld t (Menu size b_target mode colour) = (Menu size b_target mode colour
 
 makeAIMove :: World -> World
 makeAIMove (Play board turn ai mode rule)
-              | turn /= ai = Play board turn ai mode rule
-              | otherwise
-                    = Play (fromJust (makeMove board turn pos)) (other turn) ai mode rule
-                              where pos = getBestMove 2 (buildTree gen board turn )
-                                    gen = if null (pieces board)
-                                              then moveGenerator
-                                              else moveGeneratorAdj
+                | mode == PvP || (mode == PvE && turn /= ai) = Play board turn ai mode rule
+                | otherwise
+                      = Play (fromJust (makeMove board turn pos)) (other turn) ai mode rule
+                                where pos = getBestMove 2 (buildTree gen board turn )
+                                      gen = if null (pieces board)
+                                                then moveGenerator
+                                                else moveGeneratorAdj
+
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
