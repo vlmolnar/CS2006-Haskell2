@@ -39,6 +39,8 @@ buildTree gen board col = let moves = gen board col in -- generated moves
 -- traverse the game tree up to a certain depth, and pick the move which
 -- leads to the position with the best score for the player whose turn it
 -- is at the top of the game tree.
+-- This function returns the maxium value returned from a minimax of each of the
+-- nodes in the top level of the game tree
 getBestMove :: Int -- ^ Maximum search depth
                -> GameTree -- ^ Initial game tree
                -> Position
@@ -48,6 +50,9 @@ getBestMove n g = snd (maximum list)
 
 -- Gets the heuristic value of each state in the game tree and returns the best value to getBestMove
 -- This value is supplied by evaluate in the Board module
+-- When the depth is 0 the evaluation heuristic is used
+-- When there are no more moves available either 0 is returned because of no winner
+-- or +/- infinite is returned depending on the colour of the winner
 minimax :: GameTree -> Int -> Bool -> Int
 minimax g 0 True = evaluate (game_board g) (game_turn g) -- depth 0
 minimax g 0 False = -1 * (evaluate (game_board g) (game_turn g)) -- depth 0
@@ -55,15 +60,11 @@ minimax g n True = maximum [(minimax (snd nextMove) (n - 1) False) | nextMove <-
 minimax g n False = minimum [(minimax (snd nextMove) (n - 1) True) | nextMove <- (next_moves g)]
 
 -- currently generating all possible moves
+-- Theses are empty spaces
 moveGenerator :: Board -> Col -> [(Int, Int)]
 moveGenerator board col = [(x, y) | x <- [0.. (b_size board) - 1],
                                     y <- [0.. (b_size board) - 1],
                                     not ((elem ((x, y), col) (pieces board)) || (elem ((x, y), (other col)) (pieces board)))]
--- remove duplicates from list
--- convert to Data.set then back to list
--- ref: https://stackoverflow.com/questions/16108714/removing-duplicates-from-a-list-in-haskell
-rmDup :: Ord a => [a] -> [a]
-rmDup = Set.toList . Set.fromList
 
 -- generate all the empty positions adjacent to a piece from a list of pieces
 moveGeneratorAdj :: Board -> Col -> [(Int, Int)]
@@ -80,19 +81,31 @@ moveGeneratorAdjDiffParam board (p:ps) = rmDup ((getAdj board p) ++ moveGenerato
                                 (checkNextPiece board (x, y) ((a, b), col)) == Empty
                                 && (boundsCheck (b_size board) ((a, b), col) (x, y))]
 
+-- remove duplicates from list
+-- convert to Data.set then back to list
+-- ref: https://stackoverflow.com/questions/16108714/removing-duplicates-from-a-list-in-haskell
+rmDup :: Ord a => [a] -> [a]
+rmDup = Set.toList . Set.fromList
+
 -- Update the world state after some time has passed
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
 updateWorld t (Play board turn ai mode rule)
                  = do let winner = checkWon board (pieces board)
-                      case winner of Nothing -> if (length $pieces board) < (b_size board) ^ 2
+                      case winner of Nothing -> if (length $pieces board) < (b_size board) ^ 2 -- if there is a tie
                                                     then makeAIMove (Play board turn ai mode rule)
                                                     else Victory Nothing
                                      (Just c) -> Victory (Just c)
 updateWorld t (Victory winner) = Victory winner
 updateWorld t (Menu size b_target mode colour) = (Menu size b_target mode colour)
 
+
+-- This function returns an updated world with the move of the AI added to the
+-- Board
+-- If there has been a move previously made the moves generated will be
+-- spaces adjacent to other moves. The best move uses a depth of 2 for the
+-- GameTree
 makeAIMove :: World -> World
 makeAIMove (Play board turn ai mode rule)
                 | mode == PvP || (mode == PvE && turn /= ai) = Play board turn ai mode rule
@@ -118,6 +131,10 @@ makeAIMove (Play board turn ai mode rule)
  player has won and display a message if so.
 -}
 
+
+-- This function changes the state of the world to 2 moves previously
+-- This decision to move 2 moves back is that the AI moves so fast that one move
+-- back is redundant as the AI will make the same move
 undoMove :: World -> World
 undoMove (Play b turn ai mode rule)
             = Play board turn ai mode rule
