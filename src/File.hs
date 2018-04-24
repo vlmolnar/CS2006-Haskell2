@@ -9,7 +9,7 @@ import Board
 
 -- Save file path, the path where the game state is used
 jsonFile :: FilePath
-jsonFile = "data/game_features.json"
+jsonFile = "../data/game_features.json"
 
 --Reads in save file
 getJSON :: IO B.ByteString
@@ -37,4 +37,4 @@ worldToSave (Play b t a m) = File b t a m
 
 -- This function converts a Save object to a World object
 saveToWorld :: Maybe Save -> World
-saveToWorld (Just (File b t a m)) = Play b t a m
+saveToWorld (Just (File b t a m)) = Play b t a m 

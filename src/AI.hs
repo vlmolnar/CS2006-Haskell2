@@ -63,6 +63,7 @@ getBestMove 1 n g = unsafePerformIO $ do  gen <-  newStdGen
 minimax :: GameTree -> Int -> Bool -> Int
 minimax g 0 True = evaluate (game_board g) (game_turn g) -- depth 0
 minimax g 0 False = -1 * (evaluate (game_board g) (game_turn g)) -- depth 0
+minimax (GameTree b t []) n  player = (evaluate b t)
 minimax g n True = maximum [(minimax (snd nextMove) (n - 1) False) | nextMove <- (next_moves g)]
 minimax g n False = minimum [(minimax (snd nextMove) (n - 1) True) | nextMove <- (next_moves g)]
 

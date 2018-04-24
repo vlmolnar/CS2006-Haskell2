@@ -117,14 +117,14 @@ initWorld = (Menu 6 3 (AI White 2) PvE)
 -- (e.g. outside the range of the board, or there is a piece already there, or breaks the Rule applied)
 makeMove :: Board -> Col -> Position -> Rule -> Maybe Board
 makeMove b col pos r  | fst pos < 0 = Nothing
-                          | snd pos < 0 = Nothing
-                          | fst pos > (b_size b) - 1 = Nothing
-                          | snd pos > (b_size b) - 1 = Nothing
-                          | elem (pos, col) (pieces b) = Nothing
-                          | otherwise
-                              = if (enforceRules b r col pos)
-                                      then Just (Board (b_size b) (b_target b) (b_rule b) ((pos, col) : (pieces b)))
-                                      else Nothing
+                      | snd pos < 0 = Nothing
+                      | fst pos > (b_size b) - 1 = Nothing
+                      | snd pos > (b_size b) - 1 = Nothing
+                      | elem (pos, col) (pieces b) = Nothing
+                      | otherwise
+                            = if (enforceRules b r col pos)
+                                then Just (Board (b_size b) (b_target b) (b_rule b) ((pos, col) : (pieces b)))
+                                else Nothing
 -----------------
 -- HOUSE RULES --
 -----------------
@@ -169,10 +169,7 @@ houseRuleDirection b n (dirX, dirY) ((x, y), col)
                                     = True
                                 | checkNextPiece b (dirX, dirY) ((x, y), col) == Empty
                                     = True
-                                | x + dirX < 0 = True         --bounds checks
-                                | y + dirY < 0 = True         --bounds checks
-                                | x + dirX >= (b_size b) = True --bounds checks
-                                | y + dirY >= (b_size b) = True --bounds checks
+                                | boundsCheck (b_size b) ((x, y), col) (dirX, dirY) = True
                                 | otherwise = False -- empty
 
 ----------------------
@@ -219,7 +216,6 @@ checkDirection board n (dirX, dirY) ((x,y), col)
 evaluate :: Board -> Col -> Int
 evaluate b c = case checkWon b (pieces b) of Nothing -> evalBoard b c
                                              Just x -> 10 ^ (b_size b)
-
 -- Evaluates a board with no winners checking all nodes for lines of
 -- consecutive colours
 evalBoard :: Board -> Col -> Int
@@ -229,7 +225,7 @@ evalBoard b c = sum [evalPiece b (pos, col) | (pos, col) <- filter ((== c).snd) 
 -- line is consective pieces of the same colour
 evalPiece :: Board -> (Position, Col) -> Int
 evalPiece b (pos, col) =
-        sum [evalDirection b 1 (oppDir dir) (pos, col) |
+        sum [evalDirection b 0 (oppDir dir) (pos, col) |
                 dir <- getDirections func b col (pos, col)]
                       where func = (\b p x y -> (checkNextPiece b (x, y) p) /= col)
 
@@ -245,10 +241,7 @@ evalDirection b n (dirX, dirY) ((x,y), col)
                   |  elem ((x + dirX, y + dirY), col) (pieces b) -- if same colour
                         = evalDirection b (n + 1) (dirX, dirY) ((x + dirX, y + dirY), col)
                   |  elem ((x + dirX, y + dirY), (other col)) (pieces b) = 0 -- if closed line
-                  | x + dirX < 0 = 0         --bounds checks
-                  | y + dirY < 0 = 0         --bounds checks
-                  | x + dirX >= (b_size b) = 0 --bounds checks
-                  | y + dirY >= (b_size b) = 0 --bounds checks
+                  | boundsCheck (b_size b) ((x, y), col) (dirX, dirY) = 0
                   | otherwise = 10 ^ n --if at the end of the line
 
 
