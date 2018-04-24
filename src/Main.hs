@@ -38,8 +38,8 @@ main = do
                       col <- return (args !! 2)
                       rule <- return (args !! 3)
                       case col of
-                               "Black" -> runGame (Play (Board size target (getRule rule) []) White Black PvE )
-                               otherwise->runGame (Play (Board size target (getRule rule) []) Black White PvE )
+                               "Black" -> runGame (Play (Board size target (getRule rule) []) White (AI Black 2) PvE )
+                               otherwise->runGame (Play (Board size target (getRule rule) []) Black (AI White 2) PvE )
 
 runGame :: World -> IO ()
 runGame world = play (InWindow "Gomoku" (640, 480) (10, 10))  (light black) 10

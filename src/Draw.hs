@@ -181,11 +181,11 @@ drawWorld (Play board turn ai mode) = pictures
                            , makeSaveButton
                            ]
 drawWorld (Victory winner) = makeVictory winner
-drawWorld (Menu size target mode colour) = pictures
+drawWorld (Menu size target ai mode) = pictures
                         [ makeLogo
                         , makePlayButton
                         , makeGameMode mode
-                        , makeAIOptions mode colour
+                        , makeAIOptions mode (ai_colour ai)
                         , makeBoardButtons size
                         , makeTargetButtons target
                         ]

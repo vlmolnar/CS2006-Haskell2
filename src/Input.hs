@@ -41,7 +41,7 @@ handleInput (EventKey (Char k) Up _ _) (Play board turn ai mode)
 
 --Handles UI on Victory screen, proceeds to menu if the user clicks
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Victory winner)
-    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (Menu 6 3 PvE Black)
+    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (Menu 6 3 (AI White 2) PvE)
 
 --Handles UI on Menu screen
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Menu size target mode colour)
@@ -78,11 +78,11 @@ undoPress (Play board turn ai mode) (x, y) = if x >= (xBase * 1.2 - 20 - buttonW
 
 --Checks for button clicks in Menu
 playPress :: World -> (Float, Float) -> World
-playPress (Menu size target mode colour) (x,y) =
+playPress (Menu size target ai mode) (x,y) =
                                     if x >= -140 --New Game button
                                       && x <= 140
                                       && y <= -65
-                                      && y >= -130 then (Play (Board size target Regular []) Black colour mode) -- Starts new game with settings
+                                      && y >= -130 then (Play (Board size target Regular []) Black ai mode) -- Starts new game with settings
                               else if x >= -140 -- Load Game button
                                       && x <= 140
                                       && y <= -150
@@ -90,32 +90,32 @@ playPress (Menu size target mode colour) (x,y) =
                               else if x >= -20 -- AI colour button
                                       && x <= 20
                                       && y <= 170
-                                      && y >= 130 then (Menu size target mode (other colour)) --Changes AI colour
+                                      && y >= 130 then (Menu size target (AI (other (ai_colour ai)) 2) mode) --Changes AI colour
                               else if x >= -155 -- Board size up
                                       && x <= -115
                                       && y <= 50
-                                      && y >= 10 then if size + 1 <= 10 then(Menu (size+1) target mode colour) -- Increments board size by 1
-                                                      else (Menu size target mode colour)
+                                      && y >= 10 then if size + 1 <= 10 then(Menu (size+1) target ai mode) -- Increments board size by 1
+                                                      else (Menu size target ai mode)
                               else if x >= -155 -- Board size down
                                       && x <= -115
                                       && y <= 5
-                                      && y >= -38 then if size - 1 >= 3 && size - 1 >= target then(Menu (size-1) target mode colour) -- Decrements board size by 1
-                                                       else (Menu size target mode colour)
+                                      && y >= -38 then if size - 1 >= 3 && size - 1 >= target then(Menu (size-1) target ai mode) -- Decrements board size by 1
+                                                       else (Menu size target ai mode)
                               else if x >= 125 -- Target size up
                                       && x <= 165
                                       && y <= 50
-                                      && y >= 10 then if target + 1 <= size && target + 1 <= 5 then(Menu size (target+1) mode colour) -- Increments target size by 1
-                                                      else (Menu size target mode colour)
+                                      && y >= 10 then if target + 1 <= size && target + 1 <= 5 then(Menu size (target+1) ai mode) -- Increments target size by 1
+                                                      else (Menu size target ai mode)
                               else if x >= 125 -- Target size down
                                       && x <= 165
                                       && y <= 5
-                                      && y >= -38 then if target - 1 >= 3 then(Menu size (target-1) mode colour) -- Decrements target size by 1
-                                                       else (Menu size target mode colour)
+                                      && y >= -38 then if target - 1 >= 3 then(Menu size (target-1) ai mode) -- Decrements target size by 1
+                                                       else (Menu size target ai mode)
                               else if x >= -300 -- Change game mode
                                       && x <= -160
                                       && y <= 170
-                                      && y >= 130 then (Menu size target (switchGameMode mode) colour) -- Changes game mode
-                              else (Menu size target mode colour) --Click not on any buttons
+                                      && y >= 130 then (Menu size target ai (switchGameMode mode)) -- Changes game mode
+                              else (Menu size target ai mode) --Click not on any buttons
 
 -- GameMode button functionality, switches from one mode to another
 switchGameMode :: GameMode -> GameMode

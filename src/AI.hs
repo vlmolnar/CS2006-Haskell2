@@ -3,6 +3,8 @@ module AI where
 import Board
 import Data.Maybe
 import qualified Data.Set as Set
+import System.Random
+import System.IO.Unsafe
 
 data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
@@ -41,12 +43,17 @@ buildTree gen board col = let moves = gen board col in -- generated moves
 -- is at the top of the game tree.
 -- This function returns the maxium value returned from a minimax of each of the
 -- nodes in the top level of the game tree
-getBestMove :: Int -- ^ Maximum search depth
+getBestMove :: Int -- Level of AI
+                -> Int -- ^ Maximum search depth
                -> GameTree -- ^ Initial game tree
                -> Position
-getBestMove n g = snd (maximum list)
+getBestMove 2 n g = snd (maximum list)
                         where list = [((minimax g' (n - 1) False), pos) | (pos, g') <- (next_moves g)]
-
+getBestMove 1 n g = unsafePerformIO $ do  gen <-  newStdGen
+                                          let len = (length (next_moves g)) - 1
+                                          let (rand, seed) = randomR (0, len) gen
+                                          let (pos, g') = (next_moves g) !! rand
+                                          return pos
 
 -- Gets the heuristic value of each state in the game tree and returns the best value to getBestMove
 -- This value is supplied by evaluate in the Board module
@@ -108,10 +115,10 @@ updateWorld t (Menu size b_target mode colour) = (Menu size b_target mode colour
 -- GameTree
 makeAIMove :: World -> World
 makeAIMove (Play b turn ai mode)
-                | mode == PvP || (mode == PvE && turn /= ai) = Play b turn ai mode
+                | mode == PvP || (mode == PvE && turn /= (ai_colour ai)) = Play b turn ai mode
                 | otherwise
                       = Play (fromJust (makeMove b turn pos (b_rule b))) (other turn) ai mode
-                                where pos = getBestMove 2 (buildTree gen b turn)
+                                where pos = getBestMove (ai_level ai) 2 (buildTree gen b turn)
                                       gen = if null (pieces b)
                                                 then moveGenerator
                                                 else moveGeneratorAdj
@@ -144,8 +151,8 @@ undoMove (Play b turn ai mode)
 -- It u
 getHint :: World -> Position
 getHint (Play b turn ai mode)
-        | turn /= ai = pos
-                where pos = getBestMove 2 (buildTree gen b turn)
+        | turn /= (ai_colour ai) = pos
+                where pos = getBestMove (ai_level ai) 2 (buildTree gen b turn)
                       gen = if null (pieces b)
                                 then moveGenerator
                                 else moveGeneratorAdj

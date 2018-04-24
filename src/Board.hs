@@ -17,6 +17,14 @@ data Rule = Regular | Three | Four
 instance FromJSON Rule
 instance ToJSON Rule
 
+-- AI that stores the colour of the AI and level of difficulty
+data AI = AI {
+              ai_colour :: Col,
+              ai_level :: Int
+            }
+      deriving (Show, Eq, Generic, Read)
+instance FromJSON AI
+instance ToJSON AI
 -- Piece colours
 data Col = Black | White | Empty
   deriving (Show, Eq, Generic, Read)
@@ -74,23 +82,24 @@ initBoard = Board 6 3 Regular []
 -- Feel free to extend this, and 'Board' above with anything you think
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
-data World = Play { board :: Board,
+data World = Play {
+                    board :: Board,
                     turn   :: Col,
-                    ai_colour :: Col,
+                    ai :: AI,
                     game_mode :: GameMode
                   }
               | Menu {
                   size :: Int,
                   target :: Int,
-                  game_mode :: GameMode,
-                  ai_color :: Col
+                  ai :: AI,
+                  game_mode :: GameMode
                   }
               | Victory { winner :: Maybe Col }
     deriving (Show, Generic, Read)
 
 data Save = File { s_board :: Board,
                     s_turn   :: Col,
-                    s_ai_colour :: Col,
+                    s_ai :: AI,
                     s_game_mode :: GameMode
                   }
                 deriving (Show, Generic, Read)
@@ -98,7 +107,7 @@ data Save = File { s_board :: Board,
 instance FromJSON Save
 instance ToJSON Save
 
-initWorld = (Menu 6 3 PvE Black)
+initWorld = (Menu 6 3 (AI White 2) PvE)
 
 ----------------
 -- GAME LOGIC --
@@ -122,7 +131,7 @@ makeMove b col pos r  | fst pos < 0 = Nothing
 
 -- This function check for the rules chosen by the user at the command line
 -- It preemptively places the move on the board and checks whether it conforms
--- to the rules chosen 
+-- to the rules chosen
 -- Regular: no rules chosen
 -- Three: three and three rule
 -- Four: Four and Four
