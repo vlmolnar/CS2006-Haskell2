@@ -2,6 +2,7 @@ module Input(handleInput) where
 
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss
+import File
 import Board
 import Draw
 import AI

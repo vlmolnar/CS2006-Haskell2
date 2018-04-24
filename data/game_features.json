@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-{"s_Rule":"Regular","s_game_mode":"PvE","s_ai_colour":"White","s_board":{"b_size":6,"b_target":3,"pieces":[]},"s_turn":"Black"}
-=======
-{"s_Rule":"Regular","s_game_mode":"PvE","s_ai_colour":"Black","s_board":{"b_size":7,"b_target":3,"pieces":[[[5,4],"Black"],[[2,4],"White"],[[5,5],"Black"]]},"s_turn":"White"}
->>>>>>> a82b21353d3762b11000ec7fd99d96a447c260d5
+{"s_Rule":"Regular","s_game_mode":"PvE","s_ai_colour":"White","s_board":{"b_size":6,"b_target":3,"pieces":[[[4,4],"White"],[[1,4],"Black"],[[4,3],"White"],[[3,2],"Black"]]},"s_turn":"Black"}

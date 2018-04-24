@@ -4,8 +4,6 @@ module Board where
 
 import Data.Aeson
 import GHC.Generics
-import qualified Data.ByteString.Lazy as B
-import System.IO.Unsafe
 
 -- P: Player, E: Environment (AI)
 data GameMode = PvP | PvE | EvE
@@ -106,30 +104,6 @@ instance ToJSON Save
 
 initWorld = Play initBoard Black White PvE Regular
 
--- Save file path
-jsonFile :: FilePath
-jsonFile = "data/game_features.json"
-
---Reads in save file
-getJSON :: IO B.ByteString
-getJSON = B.readFile jsonFile
-
---Writes to save file
-writeJSON :: B.ByteString -> IO ()
-writeJSON string = B.writeFile jsonFile string
-
-readSave :: Maybe Save
-readSave = decode $ unsafePerformIO $ getJSON
-
-worldToSave :: World -> Save
-worldToSave (Play b t a m r) = File b t a m r
-
-saveToWorld :: Maybe Save -> World
-saveToWorld (Just (File b t a m r)) = Play b t a m r
-
-writeSave :: Save -> World
-writeSave s =  unsafePerformIO $ do writeJSON (encode s)
-                                    return $ saveToWorld (Just s)
 ----------------
 -- GAME LOGIC --
 ----------------
@@ -211,7 +185,7 @@ checkNextPiece b (dirX, dirY) ((x, y), col)
 -- if blank return value
 -- This function takes a board, number of consective peices, direction of travel
 -- and a piece
--- It returns a value assigned to this line, 10 ^ 4 for four pieces in a row. 
+-- It returns a value assigned to this line, 10 ^ 4 for four pieces in a row.
 evalDirection :: Board -> Int -> Direction -> (Position, Col) -> Int
 evalDirection b n (dirX, dirY) ((x,y), col)
                   |  elem ((x + dirX, y + dirY), col) (pieces b) -- if same colour
