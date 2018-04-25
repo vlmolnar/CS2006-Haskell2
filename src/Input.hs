@@ -56,7 +56,7 @@ handleInput e b = b
 getBoardCoord :: (Float, Float) -> (Int, Int)
 getBoardCoord (x,y) = (round ((x - xBase) / squareWidth), (round ((yBase - y) / squareWidth)))
 
---Updates world based on user input
+--Updates Play world based on user input
 makeWorld :: World -> (Float, Float) -> World
 -- Checks for button clicks on board, makes a move if it's legal
 makeWorld (Play board turn ai mode) (x, y) = do let val = makeMove board turn (getBoardCoord (x,y)) (b_rule board)
@@ -71,13 +71,17 @@ undoPress (Play board turn ai mode) (x, y) = if x >= (xBase * 1.2 - 20 - buttonW
                                                     && y <= yBase
                                                     && y >= (yBase - buttonWidth)
                                                     then undoMove (Play board turn ai mode) --Updates world to previous state
-                                                else
-                                                  if x >= (xBase * 1.2 - 20 - buttonWidth/2) --Save Button
-                                                    && x <= (xBase * 1.2 - 20 + buttonWidth/2)
-                                                    && y <= yBase - squareWidth
-                                                    && y >= (yBase - squareWidth - buttonWidth)
-                                                    then writeSave $ worldToSave (Play board turn ai mode)
-                                                  else (Play board turn ai mode)
+                                             else if x >= (xBase * 1.2 - 20 - buttonWidth/2) --Save button
+                                                     && x <= (xBase * 1.2 - 20 + buttonWidth/2)
+                                                     && y <= yBase - squareWidth
+                                                     && y >= (yBase - squareWidth - buttonWidth)
+                                                     then writeSave $ worldToSave (Play board turn ai mode)
+                                             else if x >= (xBase * 1.2 - 20 - buttonWidth/2) --Hint button
+                                                     && x <= (xBase * 1.2 - 20 + buttonWidth/2)
+                                                     && y <= yBase - (squareWidth * 2)
+                                                     && y >= (yBase - (squareWidth * 2) - buttonWidth)
+                                                     then writeSave $ worldToSave (Play (hintToBoard (Play board turn ai mode)) turn ai mode)
+                                             else (Play board turn ai mode)
 
 --Checks for button clicks in Menu
 playPress :: World -> (Float, Float) -> World
@@ -85,7 +89,7 @@ playPress (Menu size target ai mode rule) (x,y) =
                                     if x >= -140 --New Game button
                                       && x <= 140
                                       && y <= -65
-                                      && y >= -130 then (Play (Board size target rule []) Black ai mode) -- Starts new game with settings
+                                      && y >= -130 then (Play (Board size target rule [] []) Black ai mode) -- Starts new game with settings
                               else if x >= -140 -- Load Game button
                                       && x <= 140
                                       && y <= -150
@@ -157,3 +161,8 @@ switchRule :: Rule -> Rule
 switchRule Regular = Three
 switchRule Three = Four
 switchRule Four = Regular
+
+hintToBoard :: World-> Board
+hintToBoard world = Board (b_size b) (b_target b) (b_rule b) (pieces b) (getHint world)
+                    where
+                      b = board world

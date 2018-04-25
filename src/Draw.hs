@@ -76,17 +76,24 @@ makePieces xs = pictures [if c == Black
 makeUndoButton :: GameMode -> Picture
 makeUndoButton EvE = Text ""
 makeUndoButton _ = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
-                          , Color (light black) (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
-                          , Color white (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text "Undo")))
-                          ]
+                            , Color (light black) (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                            , Color white (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text "Undo")))
+                            ]
 
 -- Displays Save button on Play screen
 makeSaveButton :: GameMode -> Picture
 makeSaveButton EvE = Text ""
 makeSaveButton _ = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - squareWidth - buttonWidth/2) (rectangleSolid buttonWidth buttonWidth))
-                          , Color (light black) (translate (xBase * 1.2 - 20) (yBase - squareWidth - buttonWidth/2) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
-                          , Color white (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - squareWidth - buttonWidth/2 - 5) (scale 0.1 0.1 (Text "Save")))
-                          ]
+                            , Color (light black) (translate (xBase * 1.2 - 20) (yBase - squareWidth - buttonWidth/2) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                            , Color white (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - squareWidth - buttonWidth/2 - 5) (scale 0.1 0.1 (Text "Save")))
+                            ]
+-- Displayes hint button on Play screen
+makeHintButton :: GameMode -> Picture
+makeHintButton EvE = Text ""
+makeHintButton _ = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - (squareWidth * 2) - buttonWidth/2) (rectangleSolid buttonWidth buttonWidth))
+                            , Color (light black) (translate (xBase * 1.2 - 20) (yBase - (squareWidth * 2)- buttonWidth/2) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                            , Color white (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - (squareWidth * 2) - buttonWidth/2 - 5) (scale 0.1 0.1 (Text "Hint")))
+                            ]
 
 -- Prints text of winner on Victory screen
 makeVictory :: Maybe Col --Colour of winner
@@ -204,6 +211,7 @@ drawWorld (Play board turn ai mode) = pictures
                            , makePieces (pieces board)
                            , makeUndoButton mode
                            , makeSaveButton mode
+                           , makeHintButton mode
                            ]
 drawWorld (Victory winner) = makeVictory winner
 drawWorld (Menu size target ai mode rule) = pictures

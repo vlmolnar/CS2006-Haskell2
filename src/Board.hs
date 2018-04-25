@@ -66,7 +66,8 @@ data Board = Board {
                      b_size :: Int,
                      b_target :: Int,
                      b_rule :: Rule,
-                     pieces :: [(Position, Col)]
+                     pieces :: [(Position, Col)],
+                     hint :: [Position]
                    }
   deriving (Show, Generic, Read)
 
@@ -74,7 +75,7 @@ instance FromJSON Board
 instance ToJSON Board
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
-initBoard = Board 6 3 Regular []
+initBoard = Board 6 3 Regular [] []
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -125,7 +126,7 @@ makeMove b col pos r  | fst pos < 0 = Nothing
                       | elem (pos, col) (pieces b) = Nothing
                       | otherwise
                             = if (enforceRules b r col pos)
-                                then Just (Board (b_size b) (b_target b) (b_rule b) ((pos, col) : (pieces b)))
+                                then Just (Board (b_size b) (b_target b) (b_rule b) ((pos, col) : (pieces b)) [])
                                 else Nothing
 -----------------
 -- HOUSE RULES --
@@ -139,12 +140,12 @@ makeMove b col pos r  | fst pos < 0 = Nothing
 -- Four: Four and Four
 enforceRules :: Board -> Rule -> Col -> Position -> Bool
 enforceRules b Regular c p = True
-enforceRules b Three c p = houseRule (Board s t r ps) ps 3
+enforceRules b Three c p = houseRule (Board s t r ps []) ps 3
                                       where ps = ((p,c) : (pieces b))
                                             s = (b_size b)
                                             t = (b_target b)
                                             r = (b_rule b)
-enforceRules b Four c p = houseRule (Board s t r ps) ps 4
+enforceRules b Four c p = houseRule (Board s t r ps []) ps 4
                                       where ps = ((p,c) : (pieces b))
                                             s = (b_size b)
                                             t = (b_target b)

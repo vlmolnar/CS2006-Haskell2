@@ -153,19 +153,19 @@ makeAIMove (Play b turn ai EvE)
 undoMove :: World -> World
 undoMove (Play b turn ai PvE)
                 = Play board turn ai PvE
-                            where board = Board (b_size b) (b_target b) (b_rule b) ps
+                            where board = Board (b_size b) (b_target b) (b_rule b) ps []
                                   ps = if length (pieces b) < 2 then [] else drop 2 (pieces b)
 undoMove (Play b turn ai PvP)
               = Play board (other turn) ai PvP
-                      where board = Board (b_size b) (b_target b) (b_rule b) ps
+                      where board = Board (b_size b) (b_target b) (b_rule b) ps []
                             ps = if length (pieces b) < 1 then [] else drop 1 (pieces b)
 undoMove (Play b turn ai EvE) = Play b turn ai EvE
 
 -- This function returns the position to display as a hint for the user
 -- It u
-getHint :: World -> Position
+getHint :: World -> [Position]
 getHint (Play b turn ai PvE)
-      | turn /= (ai_colour (head ai)) = pos
+      | turn /= (ai_colour (head ai)) = [pos]
                 where pos = getBestMove (ai_level (head ai)) 2 (buildTree gen b turn)
                       gen = if null (pieces b)
                                 then moveGenerator
