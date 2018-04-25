@@ -1,9 +1,9 @@
 {"s_Rule":"Regular",
   "s_game_mode":"PvE",
-  "s_ai":{
+  "s_ai":[{
     "ai_colour" : "White",
     "ai_level" : 2
-  },
+  }],
   "s_board":{
     "b_size":6,
     "b_target":3,
