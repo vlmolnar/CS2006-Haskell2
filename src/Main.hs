@@ -22,9 +22,13 @@ import AI
 -- move
 
 getRule :: [Char] -> Rule
-getRule "Regular" = Regular
 getRule "Three" = Three
 getRule "Four" = Four
+getRule _ = Regular
+
+getColour :: [Char] -> Col
+getColour "Black" = Black
+getColour _ = White
 
 main :: IO ()
 main = do
@@ -32,14 +36,16 @@ main = do
           if null args
               then runGame initWorld
               else do size_string <- return (args !! 0)
-                      let size = read size_string :: Int
-                      ta <- return (args !! 1)
-                      let target = read ta :: Int
-                      col <- return (args !! 2)
-                      rule <- return (args !! 3)
-                      case col of
-                               "Black" -> runGame (Play (Board size target (getRule rule) []) White (AI Black 2) PvE )
-                               otherwise->runGame (Play (Board size target (getRule rule) []) Black (AI White 2) PvE )
+                      let s = read size_string :: Int
+                      target <- return (args !! 1)
+                      let t = read target :: Int
+                      rule <- return (args !! 2)
+                      let r = (getRule rule)
+                      colour <- return (args !! 3)
+                      let c = (getColour colour)
+                      level_string <- return (args !! 4)
+                      let l = read level_string :: Int
+                      runGame (Play (Board s t r [])  (other c) (AI c l) PvE)
 
 runGame :: World -> IO ()
 runGame world = play (InWindow "Gomoku" (640, 480) (10, 10))  (light black) 10

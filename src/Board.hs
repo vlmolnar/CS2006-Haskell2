@@ -148,16 +148,22 @@ enforceRules b Four c p = houseRule (Board s t r ps) ps 4
                                             t = (b_target b)
                                             r = (b_rule b)
 
+-- This function checks that each piece is the list of pieces conforms to the rule
+-- for each piece in list return true is pass or false if not
 houseRule :: Board -> [(Position, Col)] -> Int -> Bool
 houseRule b [] n = True
 houseRule b (x:xs) n = if houseRulePiece b x n
                           then houseRule b xs n
                           else False
 
+-- This function check all the directions that could fail the rule
+-- Only directions that would have a line with both ends open are checked
+-- @getDirections returns a list of directions that pass the function provided
+-- b = board, p = piece,
 houseRulePiece :: Board -> (Position, Col) -> Int -> Bool
 houseRulePiece b (pos, col) n =
-  and [houseRuleDirection b n dir (pos, col) |
-          dir <- getDirections func b col (pos, col)]
+  and [houseRuleDirection b n (oppDir dir) (pos, col) |
+          dir <- getDirections func b (pos, col)]
                   where func = (\b p x y -> (checkNextPiece b (x, y) p) == Empty)
 
 houseRuleDirection :: Board -> Int -> Direction -> (Position, Col) -> Bool
@@ -190,7 +196,7 @@ checkWon board (x:xs) = if checkDirections board x
 checkDirections :: Board -> (Position, Col) -> Bool
 checkDirections board (pos, col) =
     or [checkDirection board (b_target board) dir (pos, col) |
-          dir <- getDirections func board col (pos, col)]
+          dir <- getDirections func board (pos, col)]
                     where func = (\b p x y -> (x,y) /= (0, 0))
 
 -- This function implements the hint provided below
@@ -226,7 +232,7 @@ evalBoard b c = sum [evalPiece b (pos, col) | (pos, col) <- filter ((== c).snd) 
 evalPiece :: Board -> (Position, Col) -> Int
 evalPiece b (pos, col) =
         sum [evalDirection b 0 (oppDir dir) (pos, col) |
-                dir <- getDirections func b col (pos, col)]
+                dir <- getDirections func b (pos, col)]
                       where func = (\b p x y -> (checkNextPiece b (x, y) p) /= col)
 
 -- evaluate direction
@@ -238,9 +244,9 @@ evalPiece b (pos, col) =
 -- It returns a value assigned to this line, 10 ^ 4 for four pieces in a row.
 evalDirection :: Board -> Int -> Direction -> (Position, Col) -> Int
 evalDirection b n (dirX, dirY) ((x,y), col)
-                  |  elem ((x + dirX, y + dirY), col) (pieces b) -- if same colour
+                  | checkNextPiece b (dirX, dirY) ((x, y), col) == col -- if same colour
                         = evalDirection b (n + 1) (dirX, dirY) ((x + dirX, y + dirY), col)
-                  |  elem ((x + dirX, y + dirY), (other col)) (pieces b) = 0 -- if closed line
+                  | checkNextPiece b (dirX, dirY) ((x, y), col) == (other col) = 0 -- if closed line
                   | boundsCheck (b_size b) ((x, y), col) (dirX, dirY) = 0
                   | otherwise = 10 ^ n --if at the end of the line
 
@@ -249,10 +255,10 @@ evalDirection b n (dirX, dirY) ((x,y), col)
 -- check for win uses: (x, y) /= (0, 0) -- all 8 directions (N, NE, E, SE, S, SW, W, NW)
 -- Eval board uses: (checkNextPiece b (x, y) piece) /= c -- does the next piece that direction have the same colour
 -- House rules uses: (checkNextPiece b (x, y) piece) == Empty
-getDirections :: (Board -> (Position, Col) -> Int -> Int -> Bool) -> Board -> Col -> (Position, Col) -> [Direction]
-getDirections predicate b c (pos, col) = [ (x, y) | x <- [-1, 0, 1],
-                                          y <- [-1, 0, 1],
-                                          predicate b (pos, col) x y]
+getDirections :: (Board -> (Position, Col) -> Int -> Int -> Bool) -> Board -> (Position, Col) -> [Direction]
+getDirections predicate b (pos, col) = [ (x, y) | x <- [-1, 0, 1],
+                                                  y <- [-1, 0, 1],
+                                                  predicate b (pos, col) x y]
 
 -- This function returns the colour of the next piece in the direction passed
 -- Empty is used for a position not yet occupied

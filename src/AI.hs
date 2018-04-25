@@ -120,7 +120,7 @@ makeAIMove (Play b turn ai mode)
                 | otherwise
                       = Play (fromJust (makeMove b turn pos (b_rule b))) (other turn) ai mode
                                 where pos = getBestMove (ai_level ai) 2 (buildTree gen b turn)
-                                      gen = if null (pieces b)
+                                      gen = if null (pieces b) || (ai_level ai) == 1
                                                 then moveGenerator
                                                 else moveGeneratorAdj
 
