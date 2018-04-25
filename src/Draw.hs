@@ -73,15 +73,17 @@ makePieces xs = pictures [if c == Black
                           | x <- xs, let a = fst (fst x), let b = snd (fst x), let c = snd x]
 
 -- Displays Undo button on Play screen
-makeUndoButton :: Picture
-makeUndoButton = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
+makeUndoButton :: GameMode -> Picture
+makeUndoButton EvE = Text ""
+makeUndoButton _ = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid buttonWidth buttonWidth))
                           , Color (light black) (translate (xBase * 1.2 - 20) (yBase - buttonWidth / 2) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
                           , Color white (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - buttonWidth / 2 - 5) (scale 0.1 0.1 (Text "Undo")))
                           ]
 
 -- Displays Save button on Play screen
-makeSaveButton :: Picture
-makeSaveButton = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - squareWidth - buttonWidth/2) (rectangleSolid buttonWidth buttonWidth))
+makeSaveButton :: GameMode -> Picture
+makeSaveButton EvE = Text ""
+makeSaveButton _ = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase - squareWidth - buttonWidth/2) (rectangleSolid buttonWidth buttonWidth))
                           , Color (light black) (translate (xBase * 1.2 - 20) (yBase - squareWidth - buttonWidth/2) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
                           , Color white (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - squareWidth - buttonWidth/2 - 5) (scale 0.1 0.1 (Text "Save")))
                           ]
@@ -200,8 +202,8 @@ drawWorld :: World -> Picture
 drawWorld (Play board turn ai mode) = pictures
                            [ makeGrid (b_size board)
                            , makePieces (pieces board)
-                           , makeUndoButton
-                           , makeSaveButton
+                           , makeUndoButton mode
+                           , makeSaveButton mode
                            ]
 drawWorld (Victory winner) = makeVictory winner
 drawWorld (Menu size target ai mode rule) = pictures

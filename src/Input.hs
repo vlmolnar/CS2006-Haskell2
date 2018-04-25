@@ -65,6 +65,7 @@ makeWorld (Play board turn ai mode) (x, y) = do let val = makeMove board turn (g
 
 --Checks for button clicks in Play
 undoPress :: World -> (Float, Float) -> World
+undoPress (Play board turn ai EvE) (x, y) = (Play board turn ai EvE)  -- Disables Undo and Save in EvE mode
 undoPress (Play board turn ai mode) (x, y) = if x >= (xBase * 1.2 - 20 - buttonWidth/2)  --Undo button
                                                     && x <= (xBase * 1.2 - 20 + buttonWidth/2)
                                                     && y <= yBase
@@ -133,6 +134,10 @@ playPress (Menu size target ai mode rule) (x,y) =
                                       && x <= -160
                                       && y <= 170
                                       && y >= 130 then (Menu size target ai (switchGameMode mode) rule) -- Changes game mode
+                              else if x >= 240-- Change game mode
+                                      && x <= 280
+                                      && y <= 25
+                                      && y >= -15 then (Menu size target ai mode (switchRule rule)) -- Changes game rules
                               else (Menu size target ai mode rule) --Click not on any buttons
 
 -- GameMode button functionality, switches from one mode to another
@@ -146,3 +151,9 @@ switchAILevel :: Int -> Int
 switchAILevel 1 = 2
 switchAILevel 2 = 1
 switchAILevel _ = 2
+
+-- Switches game ruleset
+switchRule :: Rule -> Rule
+switchRule Regular = Three
+switchRule Three = Four
+switchRule Four = Regular
