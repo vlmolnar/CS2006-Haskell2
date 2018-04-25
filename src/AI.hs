@@ -115,14 +115,22 @@ updateWorld t (Menu size b_target mode colour) = (Menu size b_target mode colour
 -- spaces adjacent to other moves. The best move uses a depth of 2 for the
 -- GameTree
 makeAIMove :: World -> World
-makeAIMove (Play b turn ai mode)
-                | mode == PvP || (mode == PvE && turn /= (ai_colour ai)) = Play b turn ai mode
-                | otherwise
-                      = Play (fromJust (makeMove b turn pos (b_rule b))) (other turn) ai mode
-                                where pos = getBestMove (ai_level ai) 2 (buildTree gen b turn)
-                                      gen = if null (pieces b) || (ai_level ai) == 1
-                                                then moveGenerator
-                                                else moveGeneratorAdj
+makeAIMove (Play b turn ai PvP) = Play b turn ai PvP
+makeAIMove (Play b turn ai PvE)
+                    = if turn /= (ai_colour (head ai))
+                          then (Play b turn ai PvE)
+                          else Play (fromJust (makeMove b turn pos (b_rule b))) (other turn) ai PvE
+                                where pos = getBestMove (ai_level (head ai)) 2 (buildTree gen b turn)
+                                      gen = if null (pieces b)
+                                              then moveGenerator
+                                              else moveGeneratorAdj
+makeAIMove (Play b turn ai EvE)
+                    = Play (fromJust (makeMove b turn pos (b_rule b))) (other turn) ai EvE
+                      where pos = getBestMove (ai_level curr_ai) 2 (buildTree gen b turn)
+                            gen = if null (pieces b)
+                                    then moveGenerator
+                                    else moveGeneratorAdj
+                            curr_ai = if ai_colour (head ai) == turn then (head ai) else (last ai)
 
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
@@ -156,9 +164,9 @@ undoMove (Play b turn ai EvE) = Play b turn ai EvE
 -- This function returns the position to display as a hint for the user
 -- It u
 getHint :: World -> Position
-getHint (Play b turn ai mode)
-        | turn /= (ai_colour ai) = pos
-                where pos = getBestMove (ai_level ai) 2 (buildTree gen b turn)
+getHint (Play b turn ai PvE)
+      | turn /= (ai_colour (head ai)) = pos
+                where pos = getBestMove (ai_level (head ai)) 2 (buildTree gen b turn)
                       gen = if null (pieces b)
                                 then moveGenerator
                                 else moveGeneratorAdj

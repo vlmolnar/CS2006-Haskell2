@@ -85,13 +85,13 @@ initBoard = Board 6 3 Regular []
 data World = Play {
                     board :: Board,
                     turn   :: Col,
-                    ai :: AI,
+                    ai :: [AI],
                     game_mode :: GameMode
                   }
               | Menu {
                   size :: Int,
                   target :: Int,
-                  ai :: AI,
+                  ai :: [AI],
                   game_mode :: GameMode
                   }
               | Victory { winner :: Maybe Col }
@@ -99,7 +99,7 @@ data World = Play {
 
 data Save = File { s_board :: Board,
                     s_turn   :: Col,
-                    s_ai :: AI,
+                    s_ai :: [AI],
                     s_game_mode :: GameMode
                   }
                 deriving (Show, Generic, Read)
@@ -107,7 +107,7 @@ data Save = File { s_board :: Board,
 instance FromJSON Save
 instance ToJSON Save
 
-initWorld = (Menu 6 3 (AI White 2) PvE)
+initWorld = (Menu 6 3 [(AI White 2)] PvE)
 
 ----------------
 -- GAME LOGIC --

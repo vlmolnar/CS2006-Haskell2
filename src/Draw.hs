@@ -119,21 +119,32 @@ drawGameMode msg = pictures [ Color white (translate (-230) 150 (rectangleSolid 
                              ]
 
 -- Displays buttons for setting AI colour on Menu screen, if AI exists
-makeAICol :: Col -> Picture
-makeAICol Black = pictures [ Color white (translate 0 150 (rectangleSolid buttonWidth buttonWidth))
-                           , Color black (translate 0 150 (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
-                           , Color white (translate (-6) 145 (scale 0.1 0.1 (Text "AI")))
+makeAICol :: Col -> (Float, Float) -> Picture
+makeAICol Black (x, y) = pictures [ Color white (translate x y (rectangleSolid buttonWidth buttonWidth))
+                           , Color black (translate x y (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                           , Color white (translate (x-6) (y-5) (scale 0.1 0.1 (Text "AI")))
                            ]
-makeAICol White = pictures [ Color white (translate 0 150 (rectangleSolid buttonWidth buttonWidth))
-                           , Color (light black) (translate (-6) 145 (scale 0.1 0.1 (Text "AI")))
+makeAICol White (x, y) = pictures [ Color white (translate x y (rectangleSolid buttonWidth buttonWidth))
+                           , Color (light black) (translate (x-6) (y-5) (scale 0.1 0.1 (Text "AI")))
                            ]
 
 -- Checks if AI is present in game, and if so displays its colour on Menu screen
-makeAIOptions :: GameMode -> Col -> Picture
-makeAIOptions mode c = if mode /= PvE then Text ""  --If no AI is used, the button is not displayed
-                       else case c of Black -> makeAICol Black
-                                      White -> makeAICol White
-                                      Empty -> Text ""
+makeAIOptions :: GameMode -> [AI] -> Picture
+makeAIOptions PvP _ = Text ""  --If no AI is used, the button is not displayed
+makeAIOptions PvE ai = do let c = ai_colour (head ai)
+                          let l = ai_level (head ai)
+                          case c of Black -> makeAICol Black (0, 150)
+                                    White -> makeAICol White (0, 150)
+                                    Empty -> Text ""
+makeAIOptions EvE ai = do let c = ai_colour (head ai)
+                          let l = ai_level (head ai)
+                          case c of Black -> pictures [ makeAICol Black (0, 150)
+                                                      , makeAICol White (200, 150)
+                                                      ]
+                                    White -> pictures [ makeAICol White (0, 150)
+                                                      , makeAICol Black (200, 150)
+                                                      ]
+                                    Empty -> Text ""
 
 -- Displays buttons for setting game board size on Menu screen
 makeBoardButtons :: Int -> Picture
@@ -185,7 +196,7 @@ drawWorld (Menu size target ai mode) = pictures
                         [ makeLogo
                         , makePlayButton
                         , makeGameMode mode
-                        , makeAIOptions mode (ai_colour ai)
+                        , makeAIOptions mode ai
                         , makeBoardButtons size
                         , makeTargetButtons target
                         ]

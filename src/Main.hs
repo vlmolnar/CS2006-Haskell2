@@ -45,7 +45,7 @@ main = do
                       let c = (getColour colour)
                       level_string <- return (args !! 4)
                       let l = read level_string :: Int
-                      runGame (Play (Board s t r []) (other c) (AI c l) PvE)
+                      runGame (Play (Board s t r []) (other c) [(AI c l)] PvE)
 
 runGame :: World -> IO ()
 runGame world = play (InWindow "Gomoku" (640, 480) (10, 10))  (light black) 10

@@ -41,7 +41,7 @@ handleInput (EventKey (Char k) Up _ _) (Play board turn ai mode)
 
 --Handles UI on Victory screen, proceeds to menu if the user clicks
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Victory winner)
-    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (Menu 6 3 (AI White 2) PvE)
+    = trace ("Left button pressed at: " ++ show (getBoardCoord (x,y))) (Menu 6 3 [(AI White 2)] PvE)
 
 --Handles UI on Menu screen
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) (Menu size target mode colour)
@@ -87,10 +87,10 @@ playPress (Menu size target ai mode) (x,y) =
                                       && x <= 140
                                       && y <= -150
                                       && y >= -215 then saveToWorld readSave -- Reads from file to load saved state
-                              else if x >= -20 -- AI colour button
+                              else if x >= -20 -- AI 1 colour button
                                       && x <= 20
                                       && y <= 170
-                                      && y >= 130 then (Menu size target (AI (other (ai_colour ai)) 2) mode) --Changes AI colour
+                                      && y >= 130 then (Menu size target [(AI (other (ai_colour (head ai))) 2)] mode) --Changes AI colour
                               else if x >= -155 -- Board size up
                                       && x <= -115
                                       && y <= 50
