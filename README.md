@@ -14,3 +14,22 @@ Parameters:
      - rule: "Regular" - standard rules, "Three" - three and three, "Four" - four and four
      - ai_colour: "White" or "Black"
      - ai_level: a number - level = 1 or level = 2 
+
+# Menu 
+Buttons that do not have arrows:
+* need to click through the options (e.g. click on AI to change colour of AI)
+Buttons that have arrows:
+* Click up arrow to increment value
+* Click down arrow to decrement value
+
+New Game & Load Game will start a game 
+
+# In Game
+Undo: 
+* Player vs Player - undo will move back one move
+* Player vs AI - undo will move back two moves (go back to players turn) 
+* AI vs AI - if your fast enough to press undo nothing will happen
+
+Save: 
+* pressing this will save the current sate of the game in the JSON file 
+* A state saved during runtime *cannot* be reloaded during the same runtime
