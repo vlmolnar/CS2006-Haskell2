@@ -38,6 +38,15 @@ whitePiece x y = pictures [ translate x y (Color black (circleSolid width))
                             width = pieceWidth
                             smallWidth = pieceWidth * 0.9
 
+--Returns single hint piece
+hintPiece :: Float -> Float -> Picture
+hintPiece x y = pictures [ translate x y (Color blue (circleSolid width))
+                          , translate x y (Color (light black) (circleSolid smallWidth))
+                          ]
+                          where
+                            width = pieceWidth
+                            smallWidth = pieceWidth * 0.9
+
 -- Returns single square in grid on Play screen
 gridSquare :: Float -> Float -> Picture
 gridSquare x y = pictures [ translate x y (Color black (rectangleSolid width width))
@@ -94,6 +103,14 @@ makeHintButton _ = pictures [ Color white (translate (xBase * 1.2 - 20) (yBase -
                             , Color (light black) (translate (xBase * 1.2 - 20) (yBase - (squareWidth * 2)- buttonWidth/2) (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
                             , Color white (translate (xBase * 1.2 - buttonWidth / 2 - 10) (yBase - (squareWidth * 2) - buttonWidth/2 - 5) (scale 0.1 0.1 (Text "Hint")))
                             ]
+
+-- Displays the hint move, if enabled, on Play screen
+makeHint :: [Position] -> Picture
+makeHint [] = Text ""
+makeHint xs = hintPiece (xBase + (fromIntegral (fst (head xs))) * squareWidth) (yBase - (fromIntegral (snd (head xs))) * squareWidth)
+
+-- blackPiece (xBase + (fromIntegral a) * squareWidth) (yBase - (fromIntegral b) * squareWidth)
+
 
 -- Prints text of winner on Victory screen
 makeVictory :: Maybe Col --Colour of winner
@@ -212,6 +229,7 @@ drawWorld (Play board turn ai mode) = pictures
                            , makeUndoButton mode
                            , makeSaveButton mode
                            , makeHintButton mode
+                           , makeHint (hint board)
                            ]
 drawWorld (Victory winner) = makeVictory winner
 drawWorld (Menu size target ai mode rule) = pictures
