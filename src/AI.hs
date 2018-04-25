@@ -80,14 +80,14 @@ moveGeneratorAdj b c = moveGeneratorAdjDiffParam b (pieces b)
 
 moveGeneratorAdjDiffParam :: Board -> [(Position, Col)] -> [Position]
 moveGeneratorAdjDiffParam b [] = []
-moveGeneratorAdjDiffParam board (p:ps) = rmDup ((getAdj board p) ++ moveGeneratorAdjDiffParam board ps)
+moveGeneratorAdjDiffParam board (p:ps)
+  = rmDup ((getAdj board p) ++ moveGeneratorAdjDiffParam board ps)
       where
         getAdj :: Board -> (Position, Col) -> [Position]
         getAdj board ((a, b), col)
             = [(a + x, b + y) | x <- [-1, 0, 1],
                                 y <- [-1, 0, 1],
-                                (checkNextPiece board (x, y) ((a, b), col)) == Empty
-                                && (boundsCheck (b_size board) ((a, b), col) (x, y))]
+                                (checkNextPiece board (x, y) ((a, b), col)) == Just Empty]
 
 -- remove duplicates from list
 -- convert to Data.set then back to list
@@ -100,13 +100,13 @@ updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
 updateWorld t (Play board turn ai mode)
-                 = do let winner = checkWon board (pieces board)
-                      case winner of Nothing -> if (length $pieces board) < (b_size board) ^ 2 -- if there is a tie
-                                                    then makeAIMove (Play board turn ai mode)
-                                                    else Victory Nothing
-                                     (Just c) -> Victory (Just c)
+   = do let winner = checkWon board (pieces board)
+        case winner of Nothing -> if (length $pieces board) < (b_size board) ^ 2 -- if there is nto a tie
+                                      then makeAIMove (Play board turn ai mode)
+                                      else Victory Nothing
+                       (Just c) -> Victory (Just c)
 updateWorld t (Victory winner) = Victory winner
-updateWorld t (Menu size b_target mode colour rule) = (Menu size b_target mode colour rule)
+updateWorld t (Menu size b_target mode colour rule) = Menu size b_target mode colour rule
 
 
 -- This function returns an updated world with the move of the AI added to the
@@ -117,20 +117,20 @@ updateWorld t (Menu size b_target mode colour rule) = (Menu size b_target mode c
 makeAIMove :: World -> World
 makeAIMove (Play b turn ai PvP) = Play b turn ai PvP
 makeAIMove (Play b turn ai PvE)
-                    = if turn /= (ai_colour (head ai))
-                          then (Play b turn ai PvE)
-                          else Play (fromJust (makeMove b turn pos (b_rule b))) (other turn) ai PvE
-                                where pos = getBestMove (ai_level (head ai)) 2 (buildTree gen b turn)
-                                      gen = if null (pieces b)
-                                              then moveGenerator
-                                              else moveGeneratorAdj
+        = if turn /= (ai_colour (head ai))
+              then (Play b turn ai PvE)
+              else Play (fromJust (makeMove b turn pos (b_rule b))) (other turn) ai PvE
+                    where pos = getBestMove (ai_level (head ai)) 2 (buildTree gen b turn)
+                          gen = if null (pieces b)
+                                  then moveGenerator
+                                  else moveGeneratorAdj
 makeAIMove (Play b turn ai EvE)
-                    = Play (fromJust (makeMove b turn pos (b_rule b))) (other turn) ai EvE
-                      where pos = getBestMove (ai_level curr_ai) 2 (buildTree gen b turn)
-                            gen = if null (pieces b)
-                                    then moveGenerator
-                                    else moveGeneratorAdj
-                            curr_ai = if ai_colour (head ai) == turn then (head ai) else (last ai)
+        = Play (fromJust (makeMove b turn pos (b_rule b))) (other turn) ai EvE
+              where pos = getBestMove (ai_level curr_ai) 2 (buildTree gen b turn)
+                    gen = if null (pieces b)
+                        then moveGenerator
+                        else moveGeneratorAdj
+                    curr_ai = if ai_colour (head ai) == turn then (head ai) else (last ai)
 
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
@@ -152,17 +152,17 @@ makeAIMove (Play b turn ai EvE)
 -- back is redundant as the AI will make the same move
 undoMove :: World -> World
 undoMove (Play b turn ai PvE)
-                = Play board turn ai PvE
-                            where board = Board (b_size b) (b_target b) (b_rule b) ps []
-                                  ps = if length (pieces b) < 2 then [] else drop 2 (pieces b)
+        = Play board turn ai PvE
+              where board = Board (b_size b) (b_target b) (b_rule b) ps []
+                    ps = if length (pieces b) < 2 then [] else drop 2 (pieces b)
 undoMove (Play b turn ai PvP)
-              = Play board (other turn) ai PvP
-                      where board = Board (b_size b) (b_target b) (b_rule b) ps []
-                            ps = if length (pieces b) < 1 then [] else drop 1 (pieces b)
+      = Play board (other turn) ai PvP
+              where board = Board (b_size b) (b_target b) (b_rule b) ps []
+                    ps = if length (pieces b) < 1 then [] else drop 1 (pieces b)
 undoMove (Play b turn ai EvE) = Play b turn ai EvE
 
 -- This function returns the position to display as a hint for the user
--- It u
+-- It uses the functions made for the AI
 getHint :: World -> [Position]
 getHint (Play b turn ai PvE)
       | turn /= (ai_colour (head ai)) = [pos]

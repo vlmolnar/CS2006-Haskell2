@@ -110,7 +110,7 @@ data Save = File { s_board :: Board,
 instance FromJSON Save
 instance ToJSON Save
 
-initWorld = (Menu 6 3 [(AI White 2), (AI Black 1)] PvE Regular)
+initWorld = Menu 6 3 [(AI White 2), (AI Black 1)] PvE Regular
 
 ----------------
 -- GAME LOGIC --
@@ -167,19 +167,16 @@ houseRulePiece :: Board -> (Position, Col) -> Int -> Bool
 houseRulePiece b (pos, col) n =
   and [houseRuleDirection b n (oppDir dir) (pos, col) |
           dir <- getDirections func b (pos, col)]
-                  where func = (\b p x y -> (checkNextPiece b (x, y) p) == Empty)
+                  where func = (\b p x y -> (checkNextPiece b (x, y) p) == Just Empty)
 
 houseRuleDirection :: Board -> Int -> Direction -> (Position, Col) -> Bool
-houseRuleDirection b 1 dir piece = if checkNextPiece b dir piece == Empty then False else True
+houseRuleDirection b 1 dir piece = checkNextPiece b dir piece == Just Empty
+                                        --then False
+                                        -- else True
 houseRuleDirection b n (dirX, dirY) ((x, y), col)
-                                | checkNextPiece b (dirX, dirY) ((x, y), col) == col -- if same colour
-                                    = houseRuleDirection b (n - 1) (dirX, dirY) ((x + dirX, y + dirY), col)
-                                | checkNextPiece b (dirX, dirY) ((x, y), col) == (other col)
-                                    = True
-                                | checkNextPiece b (dirX, dirY) ((x, y), col) == Empty
-                                    = True
-                                | boundsCheck (b_size b) ((x, y), col) (dirX, dirY) = True
-                                | otherwise = False -- empty
+    | checkNextPiece b (dirX, dirY) ((x, y), col) == Just col -- if same colour
+        = houseRuleDirection b (n - 1) (dirX, dirY) ((x + dirX, y + dirY), col)
+    | otherwise = True
 
 ----------------------
 -- CHECK FOR WINNER --
@@ -207,11 +204,12 @@ checkDirections board (pos, col) =
 -- returns true if a winning row exists
 -- return false if no row exists in the given direction
 checkDirection :: Board -> Int -> Direction -> (Position, Col) -> Bool
-checkDirection board 1 (dirX, dirY) ((x,y), col) = True
-checkDirection board n (dirX, dirY) ((x,y), col)
-                  = if elem ((x - dirX, y - dirY), col) (pieces board)
-                        then checkDirection board (n - 1) (dirX, dirY) ((x - dirX, y - dirY), col)
-                        else False
+checkDirection b 1 (dirX, dirY) ((x,y), col) = True
+checkDirection b n (dirX, dirY) ((x,y), col)
+    | checkNextPiece b (dirX, dirY) ((x, y), col) == Just col -- if same colour
+        = checkDirection b (n - 1) (dirX, dirY) ((x + dirX, y + dirY), col)
+    | otherwise = False
+
 
 
 -------------------------------
@@ -227,8 +225,10 @@ evaluate b c = case checkWon b (pieces b) of Nothing -> evalBoard b c
                                              Just x -> 10 ^ (b_size b)
 -- Evaluates a board with no winners checking all nodes for lines of
 -- consecutive colours
+-- only evaulates pieces of the correct colour
 evalBoard :: Board -> Col -> Int
-evalBoard b c = sum [evalPiece b (pos, col) | (pos, col) <- filter ((== c).snd) (pieces b)]
+evalBoard b c = sum [evalPiece b (pos, col)
+                                | (pos, col) <- filter ((== c).snd) (pieces b)]
 
 -- evaluate all lines that start at a piece
 -- line is consective pieces of the same colour
@@ -236,7 +236,7 @@ evalPiece :: Board -> (Position, Col) -> Int
 evalPiece b (pos, col) =
         sum [evalDirection b 0 (oppDir dir) (pos, col) |
                 dir <- getDirections func b (pos, col)]
-                      where func = (\b p x y -> (checkNextPiece b (x, y) p) /= col)
+                      where func = (\b p x y -> (checkNextPiece b (x, y) p) /= Just col)
 
 -- evaluate direction
 -- if same colour +1
@@ -247,26 +247,29 @@ evalPiece b (pos, col) =
 -- It returns a value assigned to this line, 10 ^ 4 for four pieces in a row.
 evalDirection :: Board -> Int -> Direction -> (Position, Col) -> Int
 evalDirection b n (dirX, dirY) ((x,y), col)
-                  | checkNextPiece b (dirX, dirY) ((x, y), col) == col -- if same colour
-                        = evalDirection b (n + 1) (dirX, dirY) ((x + dirX, y + dirY), col)
-                  | checkNextPiece b (dirX, dirY) ((x, y), col) == (other col) = 0 -- if closed line
-                  | boundsCheck (b_size b) ((x, y), col) (dirX, dirY) = 0
-                  | otherwise = 10 ^ n --if at the end of the line
+        | checkNextPiece b (dirX, dirY) ((x, y), col) == Just col -- if same colour
+              = evalDirection b (n + 1) (dirX, dirY) ((x + dirX, y + dirY), col)
+        | checkNextPiece b (dirX, dirY) ((x, y), col) == Just Empty = 10 ^ n --if at the end of the line
+        | otherwise = 0 -- blocked
 
 
 -- This function returns a list of directions dependent on the predicate passed
 -- check for win uses: (x, y) /= (0, 0) -- all 8 directions (N, NE, E, SE, S, SW, W, NW)
 -- Eval board uses: (checkNextPiece b (x, y) piece) /= c -- does the next piece that direction have the same colour
 -- House rules uses: (checkNextPiece b (x, y) piece) == Empty
-getDirections :: (Board -> (Position, Col) -> Int -> Int -> Bool) -> Board -> (Position, Col) -> [Direction]
+getDirections :: (Board -> (Position, Col) -> Int -> Int -> Bool) -- condition
+                  -> Board -- board
+                  -> (Position, Col) -- piece being check
+                  -> [Direction] -- set of directions to check
 getDirections predicate b (pos, col) = [ (x, y) | x <- [-1, 0, 1],
                                                   y <- [-1, 0, 1],
                                                   predicate b (pos, col) x y]
 
 -- This function returns the colour of the next piece in the direction passed
 -- Empty is used for a position not yet occupied
-checkNextPiece :: Board -> Direction -> (Position, Col) -> Col
+checkNextPiece :: Board -> Direction -> (Position, Col) -> Maybe Col
 checkNextPiece b (dirX, dirY) ((x, y), col)
-                | elem ((x + dirX, y + dirY), col) (pieces b) = col
-                | elem ((x + dirX, y + dirY), (other col)) (pieces b) = (other col)
-                | otherwise = Empty
+        | elem ((x + dirX, y + dirY), col) (pieces b) = Just col -- next peice is colour
+        | elem ((x + dirX, y + dirY), (other col)) (pieces b) = Just (other col) -- next piece is other colour
+        | not $ boundsCheck (b_size b) ((x, y), col) (dirX, dirY) = Nothing -- next piece is out of bounds
+        | otherwise = Just Empty -- next piece is empty
