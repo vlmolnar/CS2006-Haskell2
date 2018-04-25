@@ -32,4 +32,4 @@ Undo:
 
 Save: 
 * pressing this will save the current sate of the game in the JSON file 
-* A state saved during runtime *cannot* be reloaded during the same runtime
+* A state saved during runtime **cannot** be reloaded during the same runtime
