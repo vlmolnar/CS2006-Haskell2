@@ -143,10 +143,15 @@ makeAIMove (Play b turn ai mode)
 -- This decision to move 2 moves back is that the AI moves so fast that one move
 -- back is redundant as the AI will make the same move
 undoMove :: World -> World
-undoMove (Play b turn ai mode)
-          = Play board turn ai mode
-              where board = Board (b_size b) (b_target b) (b_rule b) ps
-                    ps = if length (pieces b) < 2 then [] else drop 2 (pieces b)
+undoMove (Play b turn ai PvE)
+                = Play board turn ai PvE
+                            where board = Board (b_size b) (b_target b) (b_rule b) ps
+                                  ps = if length (pieces b) < 2 then [] else drop 2 (pieces b)
+undoMove (Play b turn ai PvP)
+              = Play board (other turn) ai PvP
+                      where board = Board (b_size b) (b_target b) (b_rule b) ps
+                            ps = if length (pieces b) < 1 then [] else drop 1 (pieces b)
+undoMove (Play b turn ai EvE) = Play b turn ai EvE
 
 -- This function returns the position to display as a hint for the user
 -- It u
