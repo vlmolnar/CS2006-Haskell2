@@ -128,23 +128,35 @@ makeAICol White (x, y) = pictures [ Color white (translate x y (rectangleSolid b
                            , Color (light black) (translate (x-6) (y-5) (scale 0.1 0.1 (Text "AI")))
                            ]
 
+--Displays button for setting AI difficulty level
+makeAILevel :: Int -> (Float, Float) -> Picture
+makeAILevel level (x,y) = pictures [ Color white (translate x y (rectangleSolid buttonWidth buttonWidth))
+                                   , Color (light black) (translate x y (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                                   , Color white (translate (x-12) (y-5) (scale 0.1 0.1 (Text text)))
+                                   ]
+                          where
+                            text = if level == 1 then "Easy" else "Med"
+
+
 -- Checks if AI is present in game, and if so displays its colour on Menu screen
 makeAIOptions :: GameMode -> [AI] -> Picture
 makeAIOptions PvP _ = Text ""  --If no AI is used, the button is not displayed
-makeAIOptions PvE ai = do let c = ai_colour (head ai)
-                          let l = ai_level (head ai)
-                          case c of Black -> makeAICol Black (0, 150)
-                                    White -> makeAICol White (0, 150)
-                                    Empty -> Text ""
-makeAIOptions EvE ai = do let c = ai_colour (head ai)
-                          let l = ai_level (head ai)
-                          case c of Black -> pictures [ makeAICol Black (0, 150)
-                                                      , makeAICol White (200, 150)
-                                                      ]
-                                    White -> pictures [ makeAICol White (0, 150)
-                                                      , makeAICol Black (200, 150)
-                                                      ]
-                                    Empty -> Text ""
+makeAIOptions PvE ai = pictures [ makeAICol (ai_colour (head ai)) (0, 150)
+                                , makeAILevel (ai_level (head ai)) (0,100)
+                                ]
+makeAIOptions EvE ai = pictures [ makeAICol (ai_colour (head ai)) (0, 150)
+                                , makeAILevel (ai_level (head ai)) (0,100)
+                                , makeAICol (ai_colour (last ai)) (145, 150)
+                                , makeAILevel (ai_level (last ai)) (145,100)
+                                ]
+
+makeRuleButton :: Rule -> Picture
+makeRuleButton rule = pictures [ Color white (translate 260 5 (rectangleSolid buttonWidth buttonWidth))
+                               , Color (light black) (translate 260 5 (rectangleSolid (buttonWidth - 4) (buttonWidth - 4)))
+                               , Color white (translate (245) (0) (scale 0.1 0.1 (Text text)))
+                               ]
+                      where
+                         text = if rule == Three then "3&3" else if rule == Four then "4&4" else "Norm"
 
 -- Displays buttons for setting game board size on Menu screen
 makeBoardButtons :: Int -> Picture
@@ -192,11 +204,12 @@ drawWorld (Play board turn ai mode) = pictures
                            , makeSaveButton
                            ]
 drawWorld (Victory winner) = makeVictory winner
-drawWorld (Menu size target ai mode) = pictures
+drawWorld (Menu size target ai mode rule) = pictures
                         [ makeLogo
                         , makePlayButton
                         , makeGameMode mode
                         , makeAIOptions mode ai
                         , makeBoardButtons size
                         , makeTargetButtons target
+                        , makeRuleButton rule
                         ]

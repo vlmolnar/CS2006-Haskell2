@@ -106,7 +106,7 @@ updateWorld t (Play board turn ai mode)
                                                     else Victory Nothing
                                      (Just c) -> Victory (Just c)
 updateWorld t (Victory winner) = Victory winner
-updateWorld t (Menu size b_target mode colour) = (Menu size b_target mode colour)
+updateWorld t (Menu size b_target mode colour rule) = (Menu size b_target mode colour rule)
 
 
 -- This function returns an updated world with the move of the AI added to the
