@@ -163,6 +163,8 @@ switchRule Three = Four
 switchRule Four = Regular
 
 hintToBoard :: World-> Board
-hintToBoard world = Board (b_size b) (b_target b) (b_rule b) (pieces b) (getHint world)
-                    where
-                      b = board world
+hintToBoard world = do case h of [] -> Board (b_size b) (b_target b) (b_rule b) (pieces b) (getHint world)
+                                 _ -> Board (b_size b) (b_target b) (b_rule b) (pieces b) []
+                        where
+                          b = board world
+                          h = hint (board world)
