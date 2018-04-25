@@ -25,6 +25,7 @@ data AI = AI {
       deriving (Show, Eq, Generic, Read)
 instance FromJSON AI
 instance ToJSON AI
+
 -- Piece colours
 data Col = Black | White | Empty
   deriving (Show, Eq, Generic, Read)
@@ -107,7 +108,7 @@ data Save = File { s_board :: Board,
 instance FromJSON Save
 instance ToJSON Save
 
-initWorld = (Menu 6 3 [(AI White 2)] PvE)
+initWorld = (Menu 6 3 [(AI White 2), (AI Black 1)] PvE)
 
 ----------------
 -- GAME LOGIC --
