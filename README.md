@@ -1,5 +1,5 @@
 # CS2006-Haskell2
-Repository for the second Haskell project of CS2006
+Repository for the second Haskell project of CS2006 (Advanced Programming Projects) at the University of St Andrews. The project specifications and starter code used were provided to us by Dr Edwin Brady.
 
 # How to configure
 run: cabal configure
